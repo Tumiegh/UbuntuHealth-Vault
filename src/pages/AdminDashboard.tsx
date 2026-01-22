@@ -2,6 +2,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { 
   Shield, 
   UserPlus,
@@ -12,12 +20,16 @@ import {
   CheckCircle,
   ArrowLeft,
   User,
-  Stethoscope
+  Stethoscope,
+  Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-// Mock data
-const waitingPatients = [
+/**
+ * Initial mock data for patients waiting in the queue
+ * Each patient has a unique ID, personal details, check-in time, status, and reason for visit
+ */
+const initialWaitingPatients = [
   {
     id: 1,
     name: "Thabo Molefe",
@@ -51,6 +63,11 @@ const availableDoctors = [
   { id: 3, name: "Dr. Priya Naidoo", specialty: "Pediatrics", available: false, currentPatients: 2 },
 ];
 
+/**
+ * Generates a status badge component based on patient's current status
+ * @param {string} status - The patient's current status in the queue
+ * @returns {JSX.Element | null} A styled badge component or null if status is unknown
+ */
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "awaiting_consent":
@@ -80,8 +97,102 @@ const getStatusBadge = (status: string) => {
 };
 
 const AdminDashboard = () => {
+  // Search query state for filtering patients
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Track which patient is currently selected in the queue
   const [selectedPatient, setSelectedPatient] = useState<number | null>(null);
+  
+  // Dialog open/close state for New Check-In form
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // Loading state while submitting check-in request
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Dynamic patient queue state - starts with initial mock data
+  const [waitingPatients, setWaitingPatients] = useState(initialWaitingPatients);
+  
+  // Form data for new check-in request
+  const [formData, setFormData] = useState({
+    patientName: "",
+    phoneNumber: "",
+    idNumber: "",
+  });
+
+  /**
+   * Handles input field changes in the check-in form
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The input change event
+   */
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  /**
+   * Submits the check-in request and updates the patient queue
+   * - Validates required fields (patient name and phone number)
+   * - Simulates sending an SMS access request to the patient
+   * - Adds a new patient to the waiting queue with "awaiting_consent" status
+   * - Resets the form and closes the dialog on success
+   * @param {React.FormEvent} e - The form submission event
+   */
+  const handleSubmitCheckIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.patientName || !formData.phoneNumber) {
+      alert("Please fill in patient name and phone number");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Simulate API call to send SMS request to patient
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Get current timestamp for check-in time
+      const now = new Date();
+      const checkInTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      
+      // Create new patient object with check-in details
+      const newPatient = {
+        id: Math.max(...waitingPatients.map(p => p.id), 0) + 1,
+        name: formData.patientName,
+        idNumber: formData.idNumber || "Not provided",
+        checkInTime: checkInTime,
+        status: "awaiting_consent" as const,
+        reason: "New check-in"
+      };
+      
+      console.log("Sending access request to:", {
+        patientName: formData.patientName,
+        phoneNumber: formData.phoneNumber,
+        idNumber: formData.idNumber,
+        timestamp: new Date().toISOString()
+      });
+
+      // Add new patient to the queue
+      setWaitingPatients(prev => [newPatient, ...prev]);
+
+      // Reset form and close dialog
+      setFormData({
+        patientName: "",
+        phoneNumber: "",
+        idNumber: "",
+      });
+      setIsDialogOpen(false);
+      
+      // Show success message
+      alert(`Access request sent to ${formData.patientName} at ${formData.phoneNumber}. Patient added to queue.`);
+    } catch (error) {
+      alert("Failed to send access request. Please try again.");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -132,10 +243,91 @@ const AdminDashboard = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <Button variant="heroSecondary" className="shrink-0">
-                <UserPlus className="w-4 h-4" />
-                New Check-In
-              </Button>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="heroSecondary" className="shrink-0">
+                    <UserPlus className="w-4 h-4" />
+                    New Check-In
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>New Check-In Request</DialogTitle>
+                    <DialogDescription>
+                      Enter patient details to send an access request to their phone
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmitCheckIn} className="space-y-4">
+                    <div className="space-y-2">
+                      <label htmlFor="patientName" className="text-sm font-medium">
+                        Patient Name
+                      </label>
+                      <Input
+                        id="patientName"
+                        name="patientName"
+                        placeholder="Full name"
+                        value={formData.patientName}
+                        onChange={handleFormChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="phoneNumber" className="text-sm font-medium">
+                        Phone Number
+                      </label>
+                      <Input
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        placeholder="+27 12 345 6789"
+                        value={formData.phoneNumber}
+                        onChange={handleFormChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="idNumber" className="text-sm font-medium">
+                        ID Number (Optional)
+                      </label>
+                      <Input
+                        id="idNumber"
+                        name="idNumber"
+                        placeholder="11-digit ID number"
+                        value={formData.idNumber}
+                        onChange={handleFormChange}
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => setIsDialogOpen(false)}
+                        disabled={isSubmitting}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="heroSecondary"
+                        className="flex-1"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4" />
+                            Send Request
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </motion.div>
 
             {/* Waiting Queue */}
