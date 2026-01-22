@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { 
-  Shield, 
-  Bell, 
-  FileText, 
+import {
+  Shield,
+  Bell,
+  FileText,
   Clock,
   CheckCircle,
   AlertCircle,
@@ -12,6 +12,8 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAccount } from 'wagmi';
+import ConnectButton from "@/components/ConnectButton";
 
 // Mock data
 const consentRequests = [
@@ -73,6 +75,31 @@ const healthTimeline = [
 ];
 
 const PatientDashboard = () => {
+  const { address, isConnected } = useAccount();
+
+  // Show wallet connection prompt if not connected
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="max-w-md mx-auto px-4 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mx-auto mb-6">
+            <Shield className="w-8 h-8 text-primary-foreground" />
+          </div>
+          <h2 className="text-2xl font-display font-bold mb-3">Connect Your Wallet</h2>
+          <p className="text-muted-foreground mb-6">
+            Please connect your wallet to access the patient portal and manage your medical records securely.
+          </p>
+          <ConnectButton />
+          <div className="mt-8 p-4 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              Your wallet address is your secure identity on the blockchain. All your medical data is encrypted and only accessible with your permission.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -97,13 +124,14 @@ const PatientDashboard = () => {
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
               </Button>
+              <ConnectButton />
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
                   <User className="w-5 h-5 text-primary" />
                 </div>
                 <div className="hidden sm:block">
                   <div className="text-sm font-medium">Thabo Molefe</div>
-                  <div className="text-xs text-muted-foreground">ID: 8501015800083</div>
+                  <div className="text-xs text-muted-foreground">{address?.slice(0, 6)}...{address?.slice(-4)}</div>
                 </div>
               </div>
             </div>

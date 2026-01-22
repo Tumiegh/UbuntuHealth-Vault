@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Shield, Users, Zap, ArrowRight, Menu, X } from "lucide-react";
 import { NetworkVisualization } from "./NetworkVisualization";
 import { useState } from "react";
+import ConnectButton from "./ConnectButton";
 
 export function HeroSection() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -40,9 +41,7 @@ export function HeroSection() {
               <a href="#network" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 DePIN Network
               </a>
-              <Button variant="hero" size="sm">
-                Get Started
-              </Button>
+              <ConnectButton />
             </div>
             <Button
               variant="ghost"
@@ -78,16 +77,16 @@ export function HeroSection() {
               >
                 Portals
               </a>
-              <a 
-                href="#network" 
+              <a
+                href="#network"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 DePIN Network
               </a>
-              <Button variant="hero" size="sm" className="mt-2">
-                Get Started
-              </Button>
+              <div className="mt-2">
+                <ConnectButton />
+              </div>
             </div>
           </motion.div>
         )}

@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { 
-  Shield, 
+import {
+  Shield,
   FileText,
   Clock,
   CheckCircle,
@@ -19,6 +19,8 @@ import {
   Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAccount } from 'wagmi';
+import ConnectButton from "@/components/ConnectButton";
 
 // Mock patient data
 const initialCurrentPatient = {
@@ -72,6 +74,7 @@ const waitingQueue = [
 ];
 
 const DoctorDashboard = () => {
+  const { address, isConnected } = useAccount();
   const [clinicalNotes, setClinicalNotes] = useState("");
   const [expandedHistory, setExpandedHistory] = useState<number | null>(1);
   const [prescriptions, setPrescriptions] = useState<string[]>([]);
@@ -135,6 +138,29 @@ const DoctorDashboard = () => {
     }
   };
 
+  // Show wallet connection prompt if not connected
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="max-w-md mx-auto px-4 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-warning flex items-center justify-center mx-auto mb-6">
+            <Stethoscope className="w-8 h-8 text-accent-foreground" />
+          </div>
+          <h2 className="text-2xl font-display font-bold mb-3">Connect Your Wallet</h2>
+          <p className="text-muted-foreground mb-6">
+            Please connect your wallet to access the doctor portal and view patient records securely.
+          </p>
+          <ConnectButton />
+          <div className="mt-8 p-4 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              Your wallet address verifies your identity as a healthcare provider. Patient consent is required before accessing any medical records.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -156,6 +182,7 @@ const DoctorDashboard = () => {
             </div>
             <div className="flex items-center justify-between sm:justify-end gap-3">
               <span className="text-sm text-muted-foreground truncate">Dr. Thandiwe Mbeki</span>
+              <ConnectButton />
               <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center">
                 <User className="w-5 h-5 text-accent" />
               </div>
