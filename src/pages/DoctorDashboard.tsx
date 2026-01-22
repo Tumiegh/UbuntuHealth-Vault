@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { 
   Shield, 
   FileText,
@@ -14,12 +15,13 @@ import {
   History,
   Pill,
   HeartPulse,
-  ChevronDown
+  ChevronDown,
+  Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 // Mock patient data
-const currentPatient = {
+const initialCurrentPatient = {
   id: 1,
   name: "Thabo Molefe",
   idNumber: "8501015800083",
@@ -31,6 +33,11 @@ const currentPatient = {
   currentMedications: ["Amlodipine 5mg daily"],
   sessionStartTime: "10:15"
 };
+
+const initialWaitingQueue = [
+  { id: 2, name: "Nomzamo Dlamini", waitTime: "15 min", reason: "Follow-up" },
+  { id: 3, name: "Sipho Ndlovu", waitTime: "25 min", reason: "Lab review" },
+];
 
 const medicalHistory = [
   {
@@ -67,6 +74,66 @@ const waitingQueue = [
 const DoctorDashboard = () => {
   const [clinicalNotes, setClinicalNotes] = useState("");
   const [expandedHistory, setExpandedHistory] = useState<number | null>(1);
+  const [prescriptions, setPrescriptions] = useState<string[]>([]);
+  const [newPrescription, setNewPrescription] = useState("");
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [currentPatient, setCurrentPatient] = useState(initialCurrentPatient);
+  const [waitingQueue, setWaitingQueue] = useState(initialWaitingQueue);
+  const [hasActivePatient, setHasActivePatient] = useState(true);
+
+  const handleAddPrescription = () => {
+    if (newPrescription.trim()) {
+      setPrescriptions(prev => [...prev, newPrescription.trim()]);
+      setNewPrescription("");
+    }
+  };
+
+  const handleCompleteSession = async () => {
+    setIsCompleting(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Simulate updating admin dashboard by storing completed patient info
+      const completedPatient = {
+        ...currentPatient,
+        completedAt: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+        status: 'completed'
+      };
+      
+      // Store in localStorage to simulate cross-component communication
+      const existingCompleted = JSON.parse(localStorage.getItem('completedPatients') || '[]');
+      localStorage.setItem('completedPatients', JSON.stringify([...existingCompleted, completedPatient]));
+      
+      // Move to next patient or show no patients
+      if (waitingQueue.length > 0) {
+        const nextPatient = waitingQueue[0];
+        setCurrentPatient({
+          ...nextPatient,
+          age: 35,
+          gender: "Female",
+          bloodType: "A+",
+          allergies: [],
+          chronicConditions: [],
+          currentMedications: [],
+          sessionStartTime: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+        });
+        setWaitingQueue(prev => prev.slice(1));
+      } else {
+        setHasActivePatient(false);
+      }
+      
+      // Reset session data
+      setClinicalNotes("");
+      setPrescriptions([]);
+      setExpandedHistory(null);
+      
+      alert(`Session completed for ${currentPatient.name}. Medical records updated.`);
+    } catch (error) {
+      alert("Failed to complete session. Please try again.");
+    } finally {
+      setIsCompleting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,6 +165,15 @@ const DoctorDashboard = () => {
       </header>
 
       <main className="container px-4 mx-auto py-8">
+        {!hasActivePatient ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+              <Clock className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h2 className="text-xl font-display font-semibold mb-2">No Active Patients</h2>
+            <p className="text-muted-foreground">Waiting for admin to assign next patient...</p>
+          </div>
+        ) : (
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left column - Patient Info */}
           <div className="lg:col-span-2 space-y-6">
@@ -237,18 +313,66 @@ const DoctorDashboard = () => {
                   value={clinicalNotes}
                   onChange={(e) => setClinicalNotes(e.target.value)}
                 />
+                
+                {/* Prescriptions Section */}
+                <div className="mt-4 pt-4 border-t border-border">
+                  <h4 className="text-sm font-medium mb-3">Prescriptions</h4>
+                  {prescriptions.length > 0 && (
+                    <div className="space-y-2 mb-3">
+                      {prescriptions.map((prescription, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                          <span className="text-sm">{prescription}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setPrescriptions(prev => prev.filter((_, i) => i !== index))}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Add prescription..."
+                      value={newPrescription}
+                      onChange={(e) => setNewPrescription(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleAddPrescription()}
+                      className="flex-1"
+                    />
+                    <Button variant="outline" onClick={handleAddPrescription}>
+                      Add
+                    </Button>
+                  </div>
+                </div>
+
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 pt-4 border-t border-border">
                   <span className="text-xs text-muted-foreground">
                     Auto-saved to encrypted vault
                   </span>
-                    <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
-                      <Button variant="outline" className="w-full sm:w-auto">Add Prescription</Button>
-                      <Button variant="success" size="lg" className="w-full sm:w-auto">
-                      <CheckCircle className="w-4 h-4" />
-                      Complete Session
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        variant="success" 
+                        size="lg" 
+                        className="w-full sm:w-auto"
+                        onClick={handleCompleteSession}
+                        disabled={isCompleting}
+                      >
+                        {isCompleting ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Completing...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-4 h-4" />
+                            Complete Session
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                </div>
               </div>
             </motion.section>
           </div>
@@ -319,6 +443,7 @@ const DoctorDashboard = () => {
             </motion.div>
           </div>
         </div>
+        )}
       </main>
     </div>
   );

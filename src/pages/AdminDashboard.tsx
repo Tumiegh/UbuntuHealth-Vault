@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -113,6 +114,7 @@ const AdminDashboard = () => {
   
   // Dynamic patient queue state - starts with initial mock data
   const [waitingPatients, setWaitingPatients] = useState(initialWaitingPatients);
+  const [completedPatients, setCompletedPatients] = useState<any[]>([]);
   
   // Form data for new check-in request
   const [formData, setFormData] = useState({
@@ -120,6 +122,25 @@ const AdminDashboard = () => {
     phoneNumber: "",
     idNumber: "",
   });
+
+  // Check for completed patients from localStorage
+  React.useEffect(() => {
+    const checkCompletedPatients = () => {
+      const completed = JSON.parse(localStorage.getItem('completedPatients') || '[]');
+      if (completed.length > completedPatients.length) {
+        const newCompleted = completed.slice(completedPatients.length);
+        setCompletedPatients(completed);
+        
+        // Remove completed patients from waiting queue
+        newCompleted.forEach((completedPatient: any) => {
+          setWaitingPatients(prev => prev.filter(p => p.id !== completedPatient.id));
+        });
+      }
+    };
+    
+    const interval = setInterval(checkCompletedPatients, 1000);
+    return () => clearInterval(interval);
+  }, [completedPatients.length]);
 
   // Error message state for form validation
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -448,17 +469,32 @@ const AdminDashboard = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Total Check-ins</span>
-                  <span className="text-2xl font-display font-bold">12</span>
+                  <span className="text-2xl font-display font-bold">{waitingPatients.length + completedPatients.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Completed</span>
-                  <span className="text-2xl font-display font-bold text-success">9</span>
+                  <span className="text-2xl font-display font-bold text-success">{completedPatients.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">In Queue</span>
-                  <span className="text-2xl font-display font-bold text-warning">3</span>
+                  <span className="text-2xl font-display font-bold text-warning">{waitingPatients.filter(p => p.status !== 'with_doctor').length}</span>
                 </div>
               </div>
+              
+              {/* Completed Patients List */}
+              {completedPatients.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-border">
+                  <h4 className="text-sm font-medium mb-3 text-success">Recently Completed</h4>
+                  <div className="space-y-2">
+                    {completedPatients.slice(-3).map((patient) => (
+                      <div key={patient.id} className="flex items-center justify-between p-2 rounded-lg bg-success/10">
+                        <span className="text-sm font-medium">{patient.name}</span>
+                        <span className="text-xs text-muted-foreground">{patient.completedAt}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
 
             {/* Available Doctors */}
