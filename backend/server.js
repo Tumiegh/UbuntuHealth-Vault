@@ -9,6 +9,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import checkinRoutes from "./routes/checkin.js";
+import recordsRoutes from "./routes/records.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -43,6 +44,7 @@ app.get("/health", (req, res) => {
 
 // API Routes
 app.use("/api/checkin", checkinRoutes);
+app.use("/api/records", recordsRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -81,5 +83,20 @@ app.listen(PORT, () => {
     console.warn("   - AFRICAS_TALKING_API_KEY");
     console.warn("   - AFRICAS_TALKING_USERNAME");
     console.warn("\n   Create a .env file based on .env.example\n");
+  }
+
+  // Check if IPFS/Storacha credentials are configured
+  if (!process.env.W3UP_EMAIL) {
+    console.warn("⚠️  WARNING: Storacha (IPFS) credentials not configured!");
+    console.warn("   File upload functionality will not work until you set:");
+    console.warn("   - W3UP_EMAIL");
+    console.warn("\n   Visit https://web3.storage to create an account\n");
+  }
+
+  // Check if encryption key is configured
+  if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.length < 32) {
+    console.warn("⚠️  WARNING: ENCRYPTION_KEY not set or too short!");
+    console.warn("   Using default key (NOT SECURE FOR PRODUCTION)");
+    console.warn("   Set a strong 32+ character ENCRYPTION_KEY in .env\n");
   }
 });
