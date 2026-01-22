@@ -43,6 +43,9 @@ bun install
 # or
 npm install
 
+#run dev
+npm run dev
+
 # Create environment configuration
 cp .env.example .env
 ```
