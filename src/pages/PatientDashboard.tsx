@@ -14,9 +14,10 @@ import {
 import { Link } from "react-router-dom";
 import { useAccount } from 'wagmi';
 import ConnectButton from "@/components/ConnectButton";
+import { useState } from "react";
 
 // Mock data
-const consentRequests = [
+const initialConsentRequests = [
   {
     id: 1,
     institution: "Soweto General Clinic",
@@ -76,6 +77,13 @@ const healthTimeline = [
 
 const PatientDashboard = () => {
   const { address, isConnected } = useAccount();
+  const [consentRequests, setConsentRequests] = useState(initialConsentRequests);
+
+  const handleConsentResponse = (requestId: number, approved: boolean) => {
+    setConsentRequests(prev => prev.filter(req => req.id !== requestId));
+    const action = approved ? "approved" : "denied";
+    alert(`Consent request ${action} successfully`);
+  };
 
   // Show wallet connection prompt if not connected
   if (!isConnected) {
@@ -105,7 +113,7 @@ const PatientDashboard = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
         <div className="container px-4 mx-auto">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-3 sm:py-0 sm:h-16">
             <div className="flex items-center gap-4">
               <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="w-4 h-4" />
@@ -119,7 +127,7 @@ const PatientDashboard = () => {
                 <span className="font-display font-bold">Patient Portal</span>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
@@ -177,10 +185,20 @@ const PatientDashboard = () => {
                         </div>
                       </div>
                       <div className="flex w-full sm:w-auto gap-2 sm:justify-end">
-                        <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 sm:flex-none"
+                          onClick={() => handleConsentResponse(request.id, false)}
+                        >
                           Deny
                         </Button>
-                        <Button variant="success" size="sm" className="flex-1 sm:flex-none">
+                        <Button 
+                          variant="success" 
+                          size="sm" 
+                          className="flex-1 sm:flex-none"
+                          onClick={() => handleConsentResponse(request.id, true)}
+                        >
                           Approve
                         </Button>
                       </div>
@@ -237,30 +255,30 @@ const PatientDashboard = () => {
           <div className="space-y-6">
             {/* Data Sovereignty Card */}
             <motion.div
-              className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-6 border border-primary/20"
+              className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-4 sm:p-6 border border-primary/20"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.2 }}
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-primary-foreground" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary flex items-center justify-center">
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-display font-semibold">Your Data Vault</h3>
-                  <p className="text-sm text-muted-foreground">Fully encrypted & sovereign</p>
+                  <h3 className="text-base sm:text-lg font-display font-semibold">Your Data Vault</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Fully encrypted & sovereign</p>
                 </div>
               </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Records Stored</span>
                   <span className="font-medium">47 documents</span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Active Consents</span>
                   <span className="font-medium">0</span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Last Updated</span>
                   <span className="font-medium">Today, 09:15</span>
                 </div>
@@ -269,22 +287,22 @@ const PatientDashboard = () => {
 
             {/* Recent Access */}
             <motion.div
-              className="bg-card rounded-2xl p-6 border border-border"
+              className="bg-card rounded-2xl p-4 sm:p-6 border border-border"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >
-              <h3 className="font-display font-semibold mb-4">Recent Access</h3>
-              <div className="space-y-4">
+              <h3 className="text-base sm:text-lg font-display font-semibold mb-4">Recent Access</h3>
+              <div className="space-y-3 sm:space-y-4">
                 {accessHistory.map((access) => (
-                  <div key={access.id} className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center shrink-0">
-                      <CheckCircle className="w-4 h-4 text-success" />
+                  <div key={access.id} className="flex items-start gap-2 sm:gap-3">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-success/20 flex items-center justify-center shrink-0">
+                      <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-success" />
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{access.institution}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium truncate">{access.institution}</p>
                       <p className="text-xs text-muted-foreground">{access.doctor}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-1 sm:gap-2 mt-1">
                         <Clock className="w-3 h-3 text-muted-foreground" />
                         <span className="text-xs text-muted-foreground">{access.accessedAt}</span>
                       </div>
