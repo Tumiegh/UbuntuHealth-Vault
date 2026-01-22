@@ -41,7 +41,7 @@ const getNodeColor = (status: Node["status"]) => {
 
 export function NetworkVisualization() {
   return (
-    <div className="relative w-full h-[400px] overflow-hidden rounded-2xl bg-card border border-border">
+    <div className="relative w-full h-[260px] sm:h-[320px] lg:h-[400px] overflow-hidden rounded-2xl bg-card border border-border">
       <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
         {/* Connection Lines */}
         {connections.map(([from, to], i) => {
@@ -125,7 +125,7 @@ export function NetworkVisualization() {
       </svg>
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 flex items-center gap-4 text-xs">
+      <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-success" />
           <span className="text-muted-foreground">Active</span>
@@ -141,7 +141,7 @@ export function NetworkVisualization() {
       </div>
 
       {/* Stats overlay */}
-      <div className="absolute top-4 right-4 bg-card/90 backdrop-blur-sm rounded-lg p-3 border border-border">
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-card/90 backdrop-blur-sm rounded-lg p-2 sm:p-3 border border-border">
         <div className="text-2xl font-display font-bold text-primary">
           {nodes.filter((n) => n.status === "active").length}
         </div>

@@ -88,7 +88,7 @@ const AdminDashboard = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
         <div className="container px-4 mx-auto">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-3 sm:py-0 sm:h-16">
             <div className="flex items-center gap-4">
               <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="w-4 h-4" />
@@ -102,8 +102,8 @@ const AdminDashboard = () => {
                 <span className="font-display font-bold">Admin Portal</span>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">Soweto General Clinic</span>
+            <div className="flex items-center justify-between sm:justify-end gap-3">
+              <span className="text-sm text-muted-foreground truncate">Soweto General Clinic</span>
               <div className="w-9 h-9 rounded-full bg-secondary/10 flex items-center justify-center">
                 <User className="w-5 h-5 text-secondary" />
               </div>
@@ -161,7 +161,7 @@ const AdminDashboard = () => {
                     }`}
                     onClick={() => setSelectedPatient(patient.id)}
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
                           <User className="w-5 h-5 text-muted-foreground" />
@@ -176,7 +176,7 @@ const AdminDashboard = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="sm:text-right">
                         {getStatusBadge(patient.status)}
                         <p className="text-xs text-muted-foreground mt-2">
                           Check-in: {patient.checkInTime}
@@ -213,7 +213,7 @@ const AdminDashboard = () => {
                               className="justify-start"
                             >
                               <Stethoscope className="w-4 h-4 text-primary" />
-                              {doctor.name}
+                              <span className="truncate">{doctor.name}</span>
                             </Button>
                           ))}
                         </div>

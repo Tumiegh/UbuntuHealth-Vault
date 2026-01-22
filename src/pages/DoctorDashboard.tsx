@@ -73,7 +73,7 @@ const DoctorDashboard = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
         <div className="container px-4 mx-auto">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-3 sm:py-0 sm:h-16">
             <div className="flex items-center gap-4">
               <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="w-4 h-4" />
@@ -87,8 +87,8 @@ const DoctorDashboard = () => {
                 <span className="font-display font-bold">Doctor Portal</span>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">Dr. Thandiwe Mbeki</span>
+            <div className="flex items-center justify-between sm:justify-end gap-3">
+              <span className="text-sm text-muted-foreground truncate">Dr. Thandiwe Mbeki</span>
               <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center">
                 <User className="w-5 h-5 text-accent" />
               </div>
@@ -108,7 +108,7 @@ const DoctorDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <div className="flex items-start justify-between mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                 <div className="flex items-start gap-4">
                   <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center">
                     <User className="w-7 h-7 text-accent-foreground" />
@@ -116,14 +116,14 @@ const DoctorDashboard = () => {
                   <div>
                     <h2 className="text-xl font-display font-bold">{currentPatient.name}</h2>
                     <p className="text-sm text-muted-foreground">ID: {currentPatient.idNumber}</p>
-                    <div className="flex items-center gap-4 mt-2 text-sm">
+                    <div className="flex flex-wrap items-center gap-4 mt-2 text-sm">
                       <span>{currentPatient.age} years</span>
                       <span>{currentPatient.gender}</span>
                       <span className="font-medium">{currentPatient.bloodType}</span>
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right">
                   <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium bg-success/20 text-success rounded-full">
                     <CheckCircle className="w-4 h-4" />
                     Active Session
@@ -206,7 +206,7 @@ const DoctorDashboard = () => {
                         <div className="pt-4">
                           <p className="text-sm mb-3">{record.summary}</p>
                           {record.vitals && (
-                            <div className="flex gap-4 text-xs">
+                            <div className="flex flex-wrap gap-2 sm:gap-4 text-xs">
                               <span className="px-2 py-1 bg-muted rounded">BP: {record.vitals.bp}</span>
                               <span className="px-2 py-1 bg-muted rounded">HR: {record.vitals.hr}</span>
                               <span className="px-2 py-1 bg-muted rounded">Temp: {record.vitals.temp}</span>
@@ -237,13 +237,13 @@ const DoctorDashboard = () => {
                   value={clinicalNotes}
                   onChange={(e) => setClinicalNotes(e.target.value)}
                 />
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 pt-4 border-t border-border">
                   <span className="text-xs text-muted-foreground">
                     Auto-saved to encrypted vault
                   </span>
-                  <div className="flex gap-2">
-                    <Button variant="outline">Add Prescription</Button>
-                    <Button variant="success" size="lg">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+                      <Button variant="outline" className="w-full sm:w-auto">Add Prescription</Button>
+                      <Button variant="success" size="lg" className="w-full sm:w-auto">
                       <CheckCircle className="w-4 h-4" />
                       Complete Session
                     </Button>

@@ -15,7 +15,7 @@ export function HeroSection() {
       <div className="container relative z-10 px-4 pt-20 pb-16 mx-auto">
         {/* Navigation */}
         <motion.nav
-          className="flex items-center justify-between mb-16"
+          className="flex items-center justify-between mb-10 sm:mb-16"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -42,7 +42,21 @@ export function HeroSection() {
           </div>
         </motion.nav>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        {/* Mobile quick actions */}
+        <div className="md:hidden mb-10 flex gap-3">
+          <a href="#portals" className="flex-1">
+            <Button variant="hero" className="w-full">
+              Explore Portals
+            </Button>
+          </a>
+          <a href="#how-it-works" className="flex-1">
+            <Button variant="portal" className="w-full">
+              Workflow
+            </Button>
+          </a>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
           {/* Left column - Text */}
           <motion.div
             className="space-y-8"
@@ -69,17 +83,17 @@ export function HeroSection() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="hero" size="xl" className="group">
+              <Button variant="hero" size="xl" className="group w-full sm:w-auto">
                 Launch Patient Portal
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button variant="portal" size="xl">
+              <Button variant="portal" size="xl" className="w-full sm:w-auto">
                 I'm a Healthcare Provider
               </Button>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-4">
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 pt-4">
               <div>
                 <div className="text-3xl font-display font-bold text-primary">40%</div>
                 <div className="text-sm text-muted-foreground">Less Admin Time</div>
@@ -106,7 +120,7 @@ export function HeroSection() {
             
             {/* Floating cards */}
             <motion.div
-              className="absolute -left-4 top-1/4 bg-card rounded-xl p-4 shadow-lg border border-border max-w-[200px]"
+              className="hidden sm:block absolute -left-4 top-1/4 bg-card rounded-xl p-4 shadow-lg border border-border max-w-[200px]"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1, duration: 0.5 }}
@@ -123,7 +137,7 @@ export function HeroSection() {
             </motion.div>
 
             <motion.div
-              className="absolute -right-4 bottom-1/4 bg-card rounded-xl p-4 shadow-lg border border-border max-w-[200px]"
+              className="hidden sm:block absolute -right-4 bottom-1/4 bg-card rounded-xl p-4 shadow-lg border border-border max-w-[200px]"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.2, duration: 0.5 }}
