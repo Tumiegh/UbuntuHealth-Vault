@@ -21,9 +21,11 @@ import {
   ArrowLeft,
   User,
   Stethoscope,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { submitCheckIn } from "@/api/checkinService";
 
 /**
  * Initial mock data for patients waiting in the queue
@@ -119,6 +121,9 @@ const AdminDashboard = () => {
     idNumber: "",
   });
 
+  // Error message state for form validation
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   /**
    * Handles input field changes in the check-in form
    * @param {React.ChangeEvent<HTMLInputElement>} e - The input change event
@@ -132,26 +137,37 @@ const AdminDashboard = () => {
   };
 
   /**
-   * Submits the check-in request and updates the patient queue
+   * Submits the check-in request to the backend API
    * - Validates required fields (patient name and phone number)
-   * - Simulates sending an SMS access request to the patient
+   * - Calls backend API to send SMS access request via Africa's Talking
    * - Adds a new patient to the waiting queue with "awaiting_consent" status
    * - Resets the form and closes the dialog on success
+   * - Displays error messages if validation or API call fails
    * @param {React.FormEvent} e - The form submission event
    */
   const handleSubmitCheckIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     
     if (!formData.patientName || !formData.phoneNumber) {
-      alert("Please fill in patient name and phone number");
+      setErrorMessage("Please fill in patient name and phone number");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // Simulate API call to send SMS request to patient
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      // Call backend API to send SMS and validate phone number
+      const response = await submitCheckIn({
+        patientName: formData.patientName,
+        phoneNumber: formData.phoneNumber,
+        idNumber: formData.idNumber || undefined,
+      });
+
+      if (!response.success) {
+        setErrorMessage(response.error || "Failed to send access request");
+        return;
+      }
+
       // Get current timestamp for check-in time
       const now = new Date();
       const checkInTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -166,12 +182,7 @@ const AdminDashboard = () => {
         reason: "New check-in"
       };
       
-      console.log("Sending access request to:", {
-        patientName: formData.patientName,
-        phoneNumber: formData.phoneNumber,
-        idNumber: formData.idNumber,
-        timestamp: new Date().toISOString()
-      });
+      console.log("Check-in successful:", response);
 
       // Add new patient to the queue
       setWaitingPatients(prev => [newPatient, ...prev]);
@@ -184,11 +195,12 @@ const AdminDashboard = () => {
       });
       setIsDialogOpen(false);
       
-      // Show success message
-      alert(`Access request sent to ${formData.patientName} at ${formData.phoneNumber}. Patient added to queue.`);
+      // Show success message with formatted phone number
+      alert(`Access request sent to ${formData.patientName} at ${response.phoneNumber}. Patient added to queue.`);
     } catch (error) {
-      alert("Failed to send access request. Please try again.");
-      console.error(error);
+      const errorMsg = error instanceof Error ? error.message : "Failed to send access request. Please check your backend server is running.";
+      setErrorMessage(errorMsg);
+      console.error("Check-in error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -257,6 +269,12 @@ const AdminDashboard = () => {
                       Enter patient details to send an access request to their phone
                     </DialogDescription>
                   </DialogHeader>
+                  {errorMessage && (
+                    <div className="flex items-start gap-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+                      <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                      <p className="text-sm text-destructive">{errorMessage}</p>
+                    </div>
+                  )}
                   <form onSubmit={handleSubmitCheckIn} className="space-y-4">
                     <div className="space-y-2">
                       <label htmlFor="patientName" className="text-sm font-medium">
