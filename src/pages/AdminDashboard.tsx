@@ -123,7 +123,16 @@ const AdminDashboard = () => {
     idNumber: "",
   });
 
-  // Check for completed patients from localStorage
+  const handleAssignToDoctor = (patientId: number, doctorId: number, doctorName: string) => {
+    setWaitingPatients(prev => 
+      prev.map(patient => 
+        patient.id === patientId 
+          ? { ...patient, status: 'with_doctor', doctor: doctorName }
+          : patient
+      )
+    );
+    alert(`Patient assigned to ${doctorName}`);
+  };
   React.useEffect(() => {
     const checkCompletedPatients = () => {
       const completed = JSON.parse(localStorage.getItem('completedPatients') || '[]');
@@ -442,6 +451,7 @@ const AdminDashboard = () => {
                               variant="outline"
                               size="sm"
                               className="justify-start"
+                              onClick={() => handleAssignToDoctor(patient.id, doctor.id, doctor.name)}
                             >
                               <Stethoscope className="w-4 h-4 text-primary" />
                               <span className="truncate">{doctor.name}</span>
