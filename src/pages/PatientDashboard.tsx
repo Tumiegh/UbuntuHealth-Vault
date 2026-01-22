@@ -121,9 +121,9 @@ const PatientDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-display font-semibold">Pending Consent Requests</h2>
-                <span className="px-2 py-1 text-xs font-medium bg-warning/20 text-warning rounded-full">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
+                <h2 className="text-lg sm:text-xl font-display font-semibold">Pending Consent Requests</h2>
+                <span className="px-2 py-1 text-xs font-medium bg-warning/20 text-warning rounded-full w-fit">
                   {consentRequests.length} pending
                 </span>
               </div>
@@ -168,9 +168,9 @@ const PatientDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-display font-semibold">Health Timeline</h2>
-                <Button variant="ghost" size="sm">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
+                <h2 className="text-lg sm:text-xl font-display font-semibold">Health Timeline</h2>
+                <Button variant="ghost" size="sm" className="w-fit">
                   View All
                   <ChevronRight className="w-4 h-4" />
                 </Button>

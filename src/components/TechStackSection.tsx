@@ -61,7 +61,7 @@ export function TechStackSection() {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
           {techItems.map((item, index) => (
             <motion.div
               key={item.title}
@@ -71,14 +71,14 @@ export function TechStackSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
             >
-              <div className="bg-card rounded-xl p-6 border border-border h-full hover:border-primary/30 hover:shadow-lg transition-all duration-300">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <item.icon className="w-6 h-6 text-primary" />
+              <div className="bg-card rounded-xl p-4 sm:p-6 border border-border h-full hover:border-primary/30 hover:shadow-lg transition-all duration-300">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-primary/20 transition-colors">
+                  <item.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-display font-semibold mb-2">
+                <h3 className="text-base sm:text-lg font-display font-semibold mb-2">
                   {item.title}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {item.description}
                 </p>
               </div>

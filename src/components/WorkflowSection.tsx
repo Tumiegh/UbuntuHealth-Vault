@@ -131,30 +131,30 @@ export function WorkflowSection() {
                 transition={{ duration: 0.5, delay: stepIndex * 0.15 }}
               >
                 {/* Phase header */}
-                <div className={`rounded-2xl ${colors.bg} border ${colors.border} p-6`}>
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className={`w-12 h-12 rounded-xl ${colors.icon} flex items-center justify-center shadow-md`}>
-                      <step.icon className="w-6 h-6" />
+                <div className={`rounded-2xl ${colors.bg} border ${colors.border} p-4 sm:p-6`}>
+                  <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${colors.icon} flex items-center justify-center shadow-md`}>
+                      <step.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
                     <div>
-                      <span className={`text-sm font-medium ${colors.text}`}>{step.phase}</span>
-                      <h3 className="text-xl font-display font-semibold">{step.title}</h3>
+                      <span className={`text-xs sm:text-sm font-medium ${colors.text}`}>{step.phase}</span>
+                      <h3 className="text-lg sm:text-xl font-display font-semibold">{step.title}</h3>
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-2 gap-3 sm:gap-4">
                     {step.items.map((item, itemIndex) => (
                       <div
                         key={item.title}
-                        className="bg-card rounded-xl p-4 border border-border"
+                        className="bg-card rounded-xl p-3 sm:p-4 border border-border"
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                            <item.icon className={`w-4 h-4 ${colors.text}`} />
+                        <div className="flex items-start gap-2 sm:gap-3">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <item.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${colors.text}`} />
                           </div>
                           <div>
-                            <h4 className="font-medium mb-1">{item.title}</h4>
-                            <p className="text-sm text-muted-foreground">{item.description}</p>
+                            <h4 className="text-sm sm:text-base font-medium mb-1">{item.title}</h4>
+                            <p className="text-xs sm:text-sm text-muted-foreground">{item.description}</p>
                           </div>
                         </div>
                       </div>

@@ -336,9 +336,9 @@ const AdminDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-display font-semibold">Patient Queue</h2>
-                <span className="text-sm text-muted-foreground">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
+                <h2 className="text-lg sm:text-xl font-display font-semibold">Patient Queue</h2>
+                <span className="text-sm text-muted-foreground w-fit">
                   {waitingPatients.length} patients today
                 </span>
               </div>

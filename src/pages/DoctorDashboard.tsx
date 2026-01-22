@@ -167,8 +167,8 @@ const DoctorDashboard = () => {
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <div className="flex items-center gap-2 mb-4">
-                <History className="w-5 h-5 text-primary" />
-                <h3 className="text-lg font-display font-semibold">Medical History</h3>
+                <History className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <h3 className="text-base sm:text-lg font-display font-semibold">Medical History</h3>
               </div>
               <div className="space-y-3">
                 {medicalHistory.map((record) => (
@@ -229,11 +229,11 @@ const DoctorDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.2 }}
             >
-              <h3 className="text-lg font-display font-semibold mb-4">Clinical Notes</h3>
+              <h3 className="text-base sm:text-lg font-display font-semibold mb-4">Clinical Notes</h3>
               <div className="bg-card rounded-xl p-4 border border-border">
                 <Textarea
                   placeholder="Enter consultation notes..."
-                  className="min-h-[150px] resize-none border-0 focus-visible:ring-0 p-0"
+                  className="min-h-[120px] sm:min-h-[150px] resize-none border-0 focus-visible:ring-0 p-0"
                   value={clinicalNotes}
                   onChange={(e) => setClinicalNotes(e.target.value)}
                 />

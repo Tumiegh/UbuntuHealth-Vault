@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Shield, Users, Zap, ArrowRight } from "lucide-react";
+import { Shield, Users, Zap, ArrowRight, Menu, X } from "lucide-react";
 import { NetworkVisualization } from "./NetworkVisualization";
+import { useState } from "react";
 
 export function HeroSection() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <section className="relative min-h-screen overflow-hidden bg-mesh">
       {/* Decorative elements */}
@@ -26,21 +29,68 @@ export function HeroSection() {
             </div>
             <span className="font-display text-xl font-bold">UbuntuHealth</span>
           </div>
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              How it Works
-            </a>
-            <a href="#portals" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Portals
-            </a>
-            <a href="#network" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              DePIN Network
-            </a>
-            <Button variant="hero" size="sm">
-              Get Started
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-8">
+              <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                How it Works
+              </a>
+              <a href="#portals" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Portals
+              </a>
+              <a href="#network" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                DePIN Network
+              </a>
+              <Button variant="hero" size="sm">
+                Get Started
+              </Button>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </motion.nav>
+
+        {/* Mobile Navigation Menu */}
+        {mobileMenuOpen && (
+          <motion.div
+            className="md:hidden bg-card/95 backdrop-blur-sm border border-border rounded-xl p-4 mb-6"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex flex-col gap-3">
+              <a 
+                href="#how-it-works" 
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                How it Works
+              </a>
+              <a 
+                href="#portals" 
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Portals
+              </a>
+              <a 
+                href="#network" 
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                DePIN Network
+              </a>
+              <Button variant="hero" size="sm" className="mt-2">
+                Get Started
+              </Button>
+            </div>
+          </motion.div>
+        )}
 
         {/* Mobile quick actions */}
         <div className="md:hidden mb-10 flex gap-3">
