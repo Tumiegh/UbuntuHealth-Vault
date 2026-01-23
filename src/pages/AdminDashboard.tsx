@@ -188,7 +188,7 @@ const AdminDashboard = () => {
     const pollSMSReplies = async () => {
       try {
         console.log("🔄 Starting SMS polling...");
-        
+
         // Fetch only unprocessed replies
         const response = await fetchSMSReplies({ processed: false });
         
@@ -666,6 +666,18 @@ const AdminDashboard = () => {
                               variant="outline"
                               size="sm"
                               className="justify-start"
+                              onClick={() => {
+                                setWaitingPatients(prev => prev.map(p =>
+                                  p.id === patient.id
+                                    ? { ...p, status: "with_doctor", doctor: doctor.name }
+                                    : p
+                                ));
+                                setSelectedPatient(null);
+                                toast({
+                                  title: "Patient Assigned",
+                                  description: `${patient.name} has been assigned to ${doctor.name}`,
+                                });
+                              }}
                             >
                               <Stethoscope className="w-4 h-4 text-primary" />
                               <span className="truncate">{doctor.name}</span>

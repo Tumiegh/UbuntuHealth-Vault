@@ -3,12 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Shield, Users, Zap, ArrowRight, Menu, X } from "lucide-react";
 import { NetworkVisualization } from "./NetworkVisualization";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import ConnectButton from "./ConnectButton";
 
 export function HeroSection() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-mesh">
@@ -145,23 +144,25 @@ export function HeroSection() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                variant="hero" 
-                size="xl" 
-                className="group w-full sm:w-auto"
-                onClick={() => navigate('/patient')}
-              >
-                Launch Patient Portal
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button 
-                variant="portal" 
-                size="xl" 
-                className="w-full sm:w-auto"
-                onClick={() => navigate('/admin')}
-              >
-                I'm a Healthcare Provider
-              </Button>
+              <Link to="/patient" className="w-full sm:w-auto">
+                <Button
+                  variant="hero"
+                  size="xl"
+                  className="group w-full"
+                >
+                  Launch Patient Portal
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link to="/doctor" className="w-full sm:w-auto">
+                <Button
+                  variant="portal"
+                  size="xl"
+                  className="w-full"
+                >
+                  I'm a Healthcare Provider
+                </Button>
+              </Link>
             </div>
 
             {/* Stats */}
