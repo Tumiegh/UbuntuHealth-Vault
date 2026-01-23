@@ -39,16 +39,9 @@ export function HeroSection() {
               <a href="#portals" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Portals
               </a>
-              <a 
-                href="#network" 
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('network')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
+              <Link to="/depin-network" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 DePIN Network
-              </a>
+              </Link>
               <ConnectButton />
             </div>
             <Button
@@ -78,24 +71,20 @@ export function HeroSection() {
               >
                 How it Works
               </a>
-              <a 
-                href="#portals" 
+              <a
+                href="#portals"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Portals
               </a>
-              <a
-                href="#network"
+              <Link
+                to="/depin-network"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  document.getElementById('network')?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => setMobileMenuOpen(false)}
               >
                 DePIN Network
-              </a>
+              </Link>
               <div className="mt-2">
                 <ConnectButton />
               </div>

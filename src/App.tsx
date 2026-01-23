@@ -9,6 +9,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import UploadRecords from "./components/UploadRecords";
 import { AccessControl } from "./components/AccessControl";
+import { ComingSoon } from "./pages/ComingSoon";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/doctor" element={<DoctorDashboard />} />
           <Route path="/upload" element={<UploadRecords />} />
           <Route path="/access-control" element={<AccessControl />} />
+          <Route path="/depin-network" element={<ComingSoon />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
