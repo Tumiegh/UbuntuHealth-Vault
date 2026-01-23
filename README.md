@@ -1,14 +1,35 @@
 # Ubuntu Health Vault
 
-A secure healthcare platform for managing patient medical records and clinic operations in South Africa.
+A secure, blockchain-powered healthcare platform for managing patient medical records and clinic operations in South Africa.
 
-## Features
+## 🌟 Features
 
 - 🏥 **Admin Dashboard** - Manage patient check-ins and queue
 - 📱 **SMS Integration** - Send access requests to patients via Africa's Talking
 - 👨‍⚕️ **Doctor Dashboard** - View and manage assigned patients
 - 👤 **Patient Dashboard** - View personal medical records
 - 🔒 **Secure Access Control** - SMS-based consent system
+- ⛓️ **Blockchain Integration** - Decentralized medical record storage on Base Sepolia
+- 🔐 **Smart Contracts** - Immutable access control and record management
+- 📦 **IPFS Storage** - Encrypted medical records stored on IPFS
+- 📲 **USSD Interface** - Feature phone support for access control
+- 🔑 **Web3 Wallet** - WalletConnect integration for secure authentication
+
+## 📚 Documentation
+
+### 🎯 Start Here
+- **[⚡ Tech Stack Quick Reference](TECH_STACK_QUICK_REFERENCE.md)** - **NEW!** Quick reference for all technologies
+- **[🏗️ Technical Architecture](TECHNICAL_ARCHITECTURE.md)** - **NEW!** Complete technical stack explanation (1000+ lines)
+
+### 📖 Setup & Deployment
+- **[🚀 Blockchain Integration Complete](BLOCKCHAIN_INTEGRATION_COMPLETE.md)** - Overview of blockchain features
+- **[📋 Smart Contracts Setup](SMART_CONTRACTS_SETUP.md)** - Detailed setup guide for smart contracts
+- **[✅ Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** - Step-by-step deployment guide
+- **[📝 Integration Summary](INTEGRATION_SUMMARY.md)** - Complete list of integrated components
+
+### 🔧 Configuration Guides
+- **[🔧 Backend Setup](BACKEND_SETUP.md)** - Backend configuration guide
+- **[🔌 WalletConnect Setup](WALLETCONNECT_SETUP.md)** - WalletConnect integration guide
 
 ## Quick Start
 

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "b1b51f05-80ed-4a13-97ea-2d0443508dfe",
+    "phoneNumber": "+27712345678",
+    "response": "NO",
+    "rawText": "NO",
+    "timestamp": "2026-01-23 17:08:08",
+    "linkId": "04553ed1-c736-4ffc-955a-2f67789d7384",
+    "processed": true,
+    "processedAt": "2026-01-23T17:08:13.839Z"
+  }
+]

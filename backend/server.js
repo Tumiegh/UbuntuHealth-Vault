@@ -8,11 +8,34 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import checkinRoutes from "./routes/checkin.js";
 import recordsRoutes from "./routes/records.js";
+import smsWebhookRoutes from "./routes/smsWebhook.js";
+import accessRoutes from "./routes/access.js";
+import ussdRoutes from "./routes/ussd.js";
 
 // Load environment variables from .env file
 dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Clear SMS replies data on server startup (development mode)
+const clearSMSData = () => {
+  const smsDataFile = path.join(__dirname, "data", "sms_replies.json");
+  try {
+    if (fs.existsSync(smsDataFile)) {
+      fs.unlinkSync(smsDataFile);
+      console.log("🗑️  Cleared SMS replies data from previous run");
+    }
+  } catch (error) {
+    console.error("Error clearing SMS data:", error);
+  }
+};
+
+clearSMSData();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +43,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
 
 // Middleware
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: FRONTEND_URL,
@@ -45,6 +69,9 @@ app.get("/health", (req, res) => {
 // API Routes
 app.use("/api/checkin", checkinRoutes);
 app.use("/api/records", recordsRoutes);
+app.use("/api/sms", smsWebhookRoutes);
+app.use("/api/access", accessRoutes);
+app.use("/api/ussd", ussdRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -98,5 +125,14 @@ app.listen(PORT, () => {
     console.warn("⚠️  WARNING: ENCRYPTION_KEY not set or too short!");
     console.warn("   Using default key (NOT SECURE FOR PRODUCTION)");
     console.warn("   Set a strong 32+ character ENCRYPTION_KEY in .env\n");
+  }
+
+  // Check if blockchain configuration is set
+  if (!process.env.BASE_SEPOLIA_RPC_URL || !process.env.HEALTH_VAULT_CONTRACT_ADDRESS) {
+    console.warn("⚠️  WARNING: Blockchain configuration not complete!");
+    console.warn("   Blockchain features will not work until you set:");
+    console.warn("   - BASE_SEPOLIA_RPC_URL");
+    console.warn("   - HEALTH_VAULT_CONTRACT_ADDRESS");
+    console.warn("\n   Deploy the smart contract first using: cd contracts && npm run deploy\n");
   }
 });
