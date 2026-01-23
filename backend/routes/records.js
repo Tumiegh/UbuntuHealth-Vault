@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import { uploadToIPFS, retrieveFromIPFS } from '../config/ipfs.js';
 import { encryptFile, decryptFile } from '../utils/encryption.js';
+import { getContract } from '../config/blockchain.js';
 
 const router = express.Router();
 const upload = multer({ 
@@ -75,18 +76,23 @@ router.get('/download/:ipfsHash', async (req, res) => {
 
     console.log(`Download request - IPFS: ${ipfsHash}, Requester: ${requesterAddress}, Patient: ${patientAddress}`);
 
-    // In a production app, you would check blockchain access rights here
-    // For now, we'll allow the patient to always access their own records
+    // Check blockchain access rights
     const isPatient = requesterAddress.toLowerCase() === patientAddress.toLowerCase();
-    
+
     if (!isPatient) {
-      // In production, check blockchain for access permission
+      // Check blockchain for access permission
       console.log('Access check: Requester is not the patient, checking blockchain permissions...');
-      // const contract = getContract();
-      // const hasAccess = await contract.hasAccess(patientAddress, requesterAddress);
-      // if (!hasAccess) {
-      //   return res.status(403).json({ error: 'Access denied' });
-      // }
+      try {
+        const contract = getContract();
+        const hasAccess = await contract.hasAccess(patientAddress, requesterAddress);
+        if (!hasAccess) {
+          return res.status(403).json({ error: 'Access denied - no blockchain permission' });
+        }
+        console.log('Access granted via blockchain');
+      } catch (error) {
+        console.error('Blockchain access check failed:', error);
+        return res.status(403).json({ error: 'Access denied - blockchain check failed' });
+      }
     }
 
     // Retrieve from IPFS
@@ -115,13 +121,49 @@ router.get('/download/:ipfsHash', async (req, res) => {
 });
 
 /**
+ * Get patient's medical records from blockchain
+ * GET /api/records/patient/:patientAddress
+ */
+router.get('/patient/:patientAddress', async (req, res) => {
+  try {
+    const { patientAddress } = req.params;
+    const contract = getContract();
+
+    console.log(`Fetching records for patient: ${patientAddress}`);
+
+    // Get records from blockchain
+    const records = await contract.getPatientRecords(patientAddress);
+
+    // Format records
+    const formattedRecords = records.map((record, index) => ({
+      index,
+      ipfsHash: record.ipfsHash,
+      timestamp: Number(record.timestamp),
+      isActive: record.isActive,
+      date: new Date(Number(record.timestamp) * 1000).toISOString()
+    }));
+
+    res.json({
+      success: true,
+      records: formattedRecords.filter(r => r.isActive)
+    });
+  } catch (error) {
+    console.error('Get records error:', error);
+    res.status(500).json({
+      error: 'Failed to get records from blockchain',
+      details: error.message
+    });
+  }
+});
+
+/**
  * Get file metadata from IPFS hash
  * GET /api/records/metadata/:ipfsHash
  */
 router.get('/metadata/:ipfsHash', async (req, res) => {
   try {
     const { ipfsHash } = req.params;
-    
+
     res.json({
       success: true,
       ipfsHash,
@@ -130,9 +172,9 @@ router.get('/metadata/:ipfsHash', async (req, res) => {
     });
   } catch (error) {
     console.error('Metadata error:', error);
-    res.status(500).json({ 
-      error: 'Failed to get metadata', 
-      details: error.message 
+    res.status(500).json({
+      error: 'Failed to get metadata',
+      details: error.message
     });
   }
 });
