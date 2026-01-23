@@ -131,6 +131,19 @@ const AdminDashboard = () => {
           : patient
       )
     );
+    
+    // Update localStorage to sync with doctor dashboard
+    const assignmentUpdate = {
+      patientId,
+      doctorId,
+      doctorName,
+      status: 'with_doctor',
+      timestamp: new Date().toISOString()
+    };
+    
+    const existingAssignments = JSON.parse(localStorage.getItem('doctorAssignments') || '[]');
+    localStorage.setItem('doctorAssignments', JSON.stringify([...existingAssignments, assignmentUpdate]));
+    
     alert(`Patient assigned to ${doctorName}`);
   };
   React.useEffect(() => {
@@ -147,7 +160,28 @@ const AdminDashboard = () => {
       }
     };
     
-    const interval = setInterval(checkCompletedPatients, 1000);
+    // Check for patient consent updates
+    const checkConsentUpdates = () => {
+      const consentUpdates = JSON.parse(localStorage.getItem('consentUpdates') || '[]');
+      consentUpdates.forEach((update: any) => {
+        setWaitingPatients(prev => 
+          prev.map(patient => 
+            patient.id === update.patientId 
+              ? { ...patient, status: update.status }
+              : patient
+          )
+        );
+      });
+      // Clear processed updates
+      if (consentUpdates.length > 0) {
+        localStorage.removeItem('consentUpdates');
+      }
+    };
+    
+    const interval = setInterval(() => {
+      checkCompletedPatients();
+      checkConsentUpdates();
+    }, 1000);
     return () => clearInterval(interval);
   }, [completedPatients.length]);
 

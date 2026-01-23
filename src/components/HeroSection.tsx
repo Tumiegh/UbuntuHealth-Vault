@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Shield, Users, Zap, ArrowRight, Menu, X } from "lucide-react";
 import { NetworkVisualization } from "./NetworkVisualization";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ConnectButton from "./ConnectButton";
 
 export function HeroSection() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-mesh">
@@ -38,7 +40,14 @@ export function HeroSection() {
               <a href="#portals" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Portals
               </a>
-              <a href="#network" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <a 
+                href="#network" 
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('network')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 DePIN Network
               </a>
               <ConnectButton />
@@ -80,7 +89,11 @@ export function HeroSection() {
               <a
                 href="#network"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  document.getElementById('network')?.scrollIntoView({ behavior: 'smooth' });
+                }}
               >
                 DePIN Network
               </a>
@@ -132,11 +145,21 @@ export function HeroSection() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="hero" size="xl" className="group w-full sm:w-auto">
+              <Button 
+                variant="hero" 
+                size="xl" 
+                className="group w-full sm:w-auto"
+                onClick={() => navigate('/patient')}
+              >
                 Launch Patient Portal
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button variant="portal" size="xl" className="w-full sm:w-auto">
+              <Button 
+                variant="portal" 
+                size="xl" 
+                className="w-full sm:w-auto"
+                onClick={() => navigate('/admin')}
+              >
                 I'm a Healthcare Provider
               </Button>
             </div>
@@ -160,6 +183,7 @@ export function HeroSection() {
 
           {/* Right column - Network Visualization */}
           <motion.div
+            id="network"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.4 }}

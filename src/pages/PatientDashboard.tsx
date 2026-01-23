@@ -82,6 +82,21 @@ const PatientDashboard = () => {
   const handleConsentResponse = (requestId: number, approved: boolean) => {
     setConsentRequests(prev => prev.filter(req => req.id !== requestId));
     const action = approved ? "approved" : "denied";
+    
+    // Update localStorage to sync with admin dashboard
+    if (approved) {
+      const consentUpdate = {
+        patientId: 1, // Thabo Molefe's ID
+        patientName: "Thabo Molefe",
+        status: "consent_granted",
+        timestamp: new Date().toISOString(),
+        requestId
+      };
+      
+      const existingConsents = JSON.parse(localStorage.getItem('consentUpdates') || '[]');
+      localStorage.setItem('consentUpdates', JSON.stringify([...existingConsents, consentUpdate]));
+    }
+    
     alert(`Consent request ${action} successfully`);
   };
 

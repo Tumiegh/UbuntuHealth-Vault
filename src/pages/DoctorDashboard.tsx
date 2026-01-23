@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import React from "react";
 import {
   Shield,
   FileText,
@@ -83,6 +84,37 @@ const DoctorDashboard = () => {
   const [currentPatient, setCurrentPatient] = useState(initialCurrentPatient);
   const [waitingQueue, setWaitingQueue] = useState(initialWaitingQueue);
   const [hasActivePatient, setHasActivePatient] = useState(true);
+
+  // Check for new patient assignments from admin
+  React.useEffect(() => {
+    const checkAssignments = () => {
+      const assignments = JSON.parse(localStorage.getItem('doctorAssignments') || '[]');
+      assignments.forEach((assignment: any) => {
+        if (assignment.patientId && !hasActivePatient) {
+          const newPatient = {
+            id: assignment.patientId,
+            name: "New Patient",
+            idNumber: "0000000000000",
+            age: 30,
+            gender: "Unknown",
+            bloodType: "Unknown",
+            allergies: [],
+            chronicConditions: [],
+            currentMedications: [],
+            sessionStartTime: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+          };
+          setCurrentPatient(newPatient);
+          setHasActivePatient(true);
+        }
+      });
+      if (assignments.length > 0) {
+        localStorage.removeItem('doctorAssignments');
+      }
+    };
+    
+    const interval = setInterval(checkAssignments, 1000);
+    return () => clearInterval(interval);
+  }, [hasActivePatient]);
 
   const handleAddPrescription = () => {
     if (newPrescription.trim()) {
