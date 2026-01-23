@@ -12,26 +12,44 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAccount } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import ConnectButton from "@/components/ConnectButton";
 import { ViewRecords } from "@/components/ViewRecords";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { HEALTH_VAULT_ADDRESS, HEALTH_VAULT_ABI } from "@/config/contract";
+import { useToast } from "@/hooks/use-toast";
 
-// Mock data
-const initialConsentRequests = [
+// Mock data for demo purposes
+const mockConsentRequests = [
   {
-    id: 1,
+    requestId: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    requester: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
+    timestamp: Date.now() - 2 * 60 * 1000, // 2 minutes ago
+    isPending: true,
+    isGranted: false,
+    expiryTime: 0,
     institution: "Soweto General Clinic",
-    requestedAt: "2 minutes ago",
-    type: "Full Medical History",
-    status: "pending"
+    doctorName: "Dr. Thandiwe Mbeki"
   },
   {
-    id: 2,
+    requestId: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+    requester: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+    timestamp: Date.now() - 60 * 60 * 1000, // 1 hour ago
+    isPending: true,
+    isGranted: false,
+    expiryTime: 0,
     institution: "Dr. Nkosi's Practice",
-    requestedAt: "1 hour ago",
-    type: "Recent Lab Results",
-    status: "pending"
+    doctorName: "Dr. John Nkosi"
+  },
+  {
+    requestId: "0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321",
+    requester: "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed",
+    timestamp: Date.now() - 3 * 60 * 60 * 1000, // 3 hours ago
+    isPending: true,
+    isGranted: false,
+    expiryTime: 0,
+    institution: "Alexandra Community Hospital",
+    doctorName: "Dr. Sarah Mokoena"
   }
 ];
 
@@ -76,30 +94,128 @@ const healthTimeline = [
   }
 ];
 
+interface AccessRequest {
+  requestId: string;
+  requester: string;
+  timestamp: number;
+  isPending: boolean;
+  isGranted: boolean;
+  expiryTime: number;
+  institution?: string;
+  doctorName?: string;
+}
+
 const PatientDashboard = () => {
   const { address, isConnected } = useAccount();
-  const [consentRequests, setConsentRequests] = useState(initialConsentRequests);
-  const [showNotifications, setShowNotifications] = useState(false);
+  const { toast } = useToast();
 
-  const handleConsentResponse = (requestId: number, approved: boolean) => {
-    setConsentRequests(prev => prev.filter(req => req.id !== requestId));
-    const action = approved ? "approved" : "denied";
-    
-    // Update localStorage to sync with admin dashboard
-    if (approved) {
-      const consentUpdate = {
-        patientId: 1, // Thabo Molefe's ID
-        patientName: "Thabo Molefe",
-        status: "consent_granted",
-        timestamp: new Date().toISOString(),
-        requestId
-      };
-      
-      const existingConsents = JSON.parse(localStorage.getItem('consentUpdates') || '[]');
-      localStorage.setItem('consentUpdates', JSON.stringify([...existingConsents, consentUpdate]));
+  // Use mock data for demo - can be replaced with real blockchain data
+  const [consentRequests, setConsentRequests] = useState<AccessRequest[]>(mockConsentRequests);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [selectedExpiry, setSelectedExpiry] = useState<{ [key: string]: string }>({});
+  const [useMockData] = useState(true); // Toggle this to use real blockchain data
+
+  // Fetch pending access requests from blockchain (optional - for production)
+  const { data: requestIds, refetch: refetchRequests } = useReadContract({
+    address: HEALTH_VAULT_ADDRESS as `0x${string}`,
+    abi: HEALTH_VAULT_ABI,
+    functionName: 'getPendingRequests',
+    args: address && !useMockData ? [address] : undefined,
+  });
+
+  // Grant access transaction
+  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  // Refetch requests when transaction succeeds (only if using real blockchain data)
+  useEffect(() => {
+    if (isSuccess && !useMockData) {
+      toast({
+        title: "Success",
+        description: "Access request processed successfully",
+      });
+      refetchRequests();
     }
-    
-    alert(`Consent request ${action} successfully`);
+  }, [isSuccess, refetchRequests, toast, useMockData]);
+
+  // Fetch request details when requestIds change (only if using real blockchain data)
+  useEffect(() => {
+    if (useMockData) return; // Skip if using mock data
+
+    const fetchRequestDetails = async () => {
+      if (!requestIds || !Array.isArray(requestIds) || requestIds.length === 0) {
+        setConsentRequests([]);
+        return;
+      }
+
+      try {
+        const requests: AccessRequest[] = (requestIds as string[]).map((id) => ({
+          requestId: id,
+          requester: `0x${id.slice(2, 42)}`,
+          timestamp: Date.now(),
+          isPending: true,
+          isGranted: false,
+          expiryTime: 0,
+        }));
+        setConsentRequests(requests);
+      } catch (error) {
+        console.error("Error fetching request details:", error);
+      }
+    };
+
+    fetchRequestDetails();
+  }, [requestIds, useMockData]);
+
+  const handleConsentResponse = (requestId: string, approved: boolean) => {
+    const request = consentRequests.find(req => req.requestId === requestId);
+    const institutionName = request?.institution || "Healthcare Provider";
+
+    if (!approved) {
+      // Remove from UI
+      setConsentRequests(prev => prev.filter(req => req.requestId !== requestId));
+      toast({
+        title: "Request Denied",
+        description: `Access request from ${institutionName} has been denied`,
+      });
+      return;
+    }
+
+    if (useMockData) {
+      // Demo mode - just update UI
+      const expiry = selectedExpiry[requestId] || "24h";
+      setConsentRequests(prev => prev.filter(req => req.requestId !== requestId));
+      toast({
+        title: "Access Granted",
+        description: `${institutionName} can now access your records for ${expiry}`,
+      });
+    } else {
+      // Production mode - interact with blockchain
+      const expiry = selectedExpiry[requestId] || "24h";
+      const expiryTimestamp = getExpiryTimestamp(expiry);
+
+      writeContract({
+        address: HEALTH_VAULT_ADDRESS as `0x${string}`,
+        abi: HEALTH_VAULT_ABI,
+        functionName: 'grantAccess',
+        args: [requestId as `0x${string}`, BigInt(expiryTimestamp)],
+      });
+    }
+  };
+
+  const getExpiryTimestamp = (expiry: string): number => {
+    const now = Math.floor(Date.now() / 1000);
+    switch (expiry) {
+      case "24h":
+        return now + 24 * 60 * 60;
+      case "7d":
+        return now + 7 * 24 * 60 * 60;
+      case "30d":
+        return now + 30 * 24 * 60 * 60;
+      case "permanent":
+        return now + 100 * 365 * 24 * 60 * 60; // 100 years
+      default:
+        return now + 24 * 60 * 60;
+    }
   };
 
   // Show wallet connection prompt if not connected
@@ -198,11 +314,21 @@ const PatientDashboard = () => {
               <div className="space-y-2">
                 {consentRequests.map((request) => (
                   <div
-                    key={request.id}
+                    key={request.requestId}
                     className="p-3 bg-muted rounded-lg"
                   >
-                    <p className="text-sm font-medium">{request.institution}</p>
-                    <p className="text-xs text-muted-foreground">{request.requestedAt}</p>
+                    <p className="text-sm font-medium">
+                      {request.institution || "Access Request"}
+                    </p>
+                    {request.doctorName && (
+                      <p className="text-xs text-muted-foreground">
+                        {request.doctorName}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(request.timestamp).toRelativeTimeString?.() ||
+                       new Date(request.timestamp).toLocaleString()}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -230,40 +356,65 @@ const PatientDashboard = () => {
               <div className="space-y-3">
                 {consentRequests.map((request) => (
                   <div
-                    key={request.id}
+                    key={request.requestId}
                     className="bg-card rounded-xl p-4 border border-border hover:border-primary/30 transition-colors"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="flex flex-col gap-4">
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center shrink-0">
                           <AlertCircle className="w-5 h-5 text-warning" />
                         </div>
-                        <div>
-                          <h3 className="font-medium">{request.institution}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Requesting: {request.type}
-                          </p>
+                        <div className="flex-1">
+                          <h3 className="font-medium">
+                            {request.institution || "Access Request"}
+                          </h3>
+                          {request.doctorName && (
+                            <p className="text-sm text-muted-foreground">
+                              {request.doctorName}
+                            </p>
+                          )}
                           <p className="text-xs text-muted-foreground mt-1">
-                            {request.requestedAt}
+                            {request.requester.slice(0, 6)}...{request.requester.slice(-4)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(request.timestamp).toLocaleString()}
                           </p>
                         </div>
                       </div>
-                      <div className="flex w-full sm:w-auto gap-2 sm:justify-end">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1 sm:flex-none"
-                          onClick={() => handleConsentResponse(request.id, false)}
+
+                      {/* Expiry Selection */}
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium">Grant access for:</label>
+                        <select
+                          className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                          value={selectedExpiry[request.requestId] || "24h"}
+                          onChange={(e) => setSelectedExpiry(prev => ({ ...prev, [request.requestId]: e.target.value }))}
+                        >
+                          <option value="24h">24 hours</option>
+                          <option value="7d">7 days</option>
+                          <option value="30d">30 days</option>
+                          <option value="permanent">Permanent</option>
+                        </select>
+                      </div>
+
+                      <div className="flex w-full gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleConsentResponse(request.requestId, false)}
+                          disabled={isPending || isConfirming}
                         >
                           Deny
                         </Button>
-                        <Button 
-                          variant="success" 
-                          size="sm" 
-                          className="flex-1 sm:flex-none"
-                          onClick={() => handleConsentResponse(request.id, true)}
+                        <Button
+                          variant="success"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleConsentResponse(request.requestId, true)}
+                          disabled={isPending || isConfirming}
                         >
-                          Approve
+                          {isPending || isConfirming ? "Processing..." : "Approve"}
                         </Button>
                       </div>
                     </div>

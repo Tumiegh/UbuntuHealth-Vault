@@ -5,8 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Shield, UserCheck, UserX, Loader2, AlertCircle, Clock, CheckCircle } from "lucide-react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
+import { readContract } from "wagmi/actions";
 import { useToast } from "@/hooks/use-toast";
 import { HEALTH_VAULT_ADDRESS, HEALTH_VAULT_ABI } from "@/config/contract";
+import { config } from "@/config/wagmi";
 
 interface AccessRequest {
   requestId: string;
@@ -15,64 +17,146 @@ interface AccessRequest {
   isPending: boolean;
   isGranted: boolean;
   expiryTime: number;
+  institution?: string;
+  doctorName?: string;
 }
 
 interface GrantedAccess {
   doctor: string;
   expiryTime: number;
+  institution?: string;
+  doctorName?: string;
+  grantedAt: number;
 }
+
+// Mock data for demo purposes
+const mockPendingRequests: AccessRequest[] = [
+  {
+    requestId: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    requester: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
+    timestamp: Date.now() - 2 * 60 * 1000,
+    isPending: true,
+    isGranted: false,
+    expiryTime: 0,
+    institution: "Soweto General Clinic",
+    doctorName: "Dr. Thandiwe Mbeki"
+  },
+  {
+    requestId: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+    requester: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+    timestamp: Date.now() - 60 * 60 * 1000,
+    isPending: true,
+    isGranted: false,
+    expiryTime: 0,
+    institution: "Dr. Nkosi's Practice",
+    doctorName: "Dr. John Nkosi"
+  }
+];
+
+const mockGrantedAccesses: GrantedAccess[] = [
+  {
+    doctor: "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed",
+    expiryTime: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days from now
+    institution: "Alexandra Community Hospital",
+    doctorName: "Dr. Sarah Mokoena",
+    grantedAt: Date.now() - 2 * 24 * 60 * 60 * 1000 // 2 days ago
+  },
+  {
+    doctor: "0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359",
+    expiryTime: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days from now
+    institution: "Sandton Medical Centre",
+    doctorName: "Dr. Michael Chen",
+    grantedAt: Date.now() - 5 * 24 * 60 * 60 * 1000 // 5 days ago
+  }
+];
 
 export function AccessControl() {
   const { address, isConnected } = useAccount();
   const { toast } = useToast();
-  const [pendingRequests, setPendingRequests] = useState<AccessRequest[]>([]);
-  const [grantedAccesses, setGrantedAccesses] = useState<GrantedAccess[]>([]);
+
+  // Use mock data for demo - can be replaced with real blockchain data
+  const [useMockData] = useState(true); // Toggle this to use real blockchain data
+  const [pendingRequests, setPendingRequests] = useState<AccessRequest[]>(mockPendingRequests);
+  const [grantedAccesses, setGrantedAccesses] = useState<GrantedAccess[]>(mockGrantedAccesses);
   const [selectedExpiry, setSelectedExpiry] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
 
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
-  // Read pending requests from blockchain
+  // Read pending requests from blockchain (optional - for production)
   const { data: requestIds, refetch: refetchRequests } = useReadContract({
     address: HEALTH_VAULT_ADDRESS as `0x${string}`,
     abi: HEALTH_VAULT_ABI,
     functionName: 'getPendingRequests',
-    args: address ? [address] : undefined,
+    args: address && !useMockData ? [address] : undefined,
   });
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && !useMockData) {
       toast({
         title: "Success",
         description: "Transaction confirmed successfully",
       });
       refetchRequests();
     }
-  }, [isSuccess]);
+  }, [isSuccess, useMockData]);
 
   useEffect(() => {
+    if (useMockData) return; // Skip if using mock data
+
     if (requestIds && Array.isArray(requestIds)) {
       fetchRequestDetails(requestIds as string[]);
     }
-  }, [requestIds]);
+  }, [requestIds, useMockData]);
 
   const fetchRequestDetails = async (ids: string[]) => {
+    if (!ids || ids.length === 0) {
+      setPendingRequests([]);
+      return;
+    }
+
     setLoading(true);
     try {
-      // In a real implementation, you would fetch details for each request ID
-      // For now, we'll use mock data
-      const requests: AccessRequest[] = ids.map((id, index) => ({
-        requestId: id,
-        requester: `0x${Math.random().toString(16).slice(2, 42)}`,
-        timestamp: Date.now() - index * 3600000,
-        isPending: true,
-        isGranted: false,
-        expiryTime: 0,
-      }));
+      // Fetch details for each request ID from the blockchain
+      const requestPromises = ids.map(async (id) => {
+        try {
+          const result = await readContract(config, {
+            address: HEALTH_VAULT_ADDRESS as `0x${string}`,
+            abi: HEALTH_VAULT_ABI,
+            functionName: 'getAccessRequest',
+            args: [id as `0x${string}`],
+          });
+
+          // The result is a tuple: [requester, timestamp, isPending, isGranted, expiryTime]
+          const [requester, timestamp, isPending, isGranted, expiryTime] = result as [string, bigint, boolean, boolean, bigint];
+
+          return {
+            requestId: id,
+            requester,
+            timestamp: Number(timestamp) * 1000, // Convert to milliseconds
+            isPending,
+            isGranted,
+            expiryTime: Number(expiryTime),
+          };
+        } catch (error) {
+          console.error(`Error fetching request ${id}:`, error);
+          return null;
+        }
+      });
+
+      const requests = (await Promise.all(requestPromises)).filter(
+        (req): req is AccessRequest => req !== null && req.isPending
+      );
+
       setPendingRequests(requests);
     } catch (error) {
       console.error("Error fetching request details:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch access requests",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -97,22 +181,57 @@ export function AccessControl() {
   const handleGrantAccess = (requestId: string) => {
     const expiry = selectedExpiry[requestId] || "24h";
     const expiryTimestamp = getExpiryTimestamp(expiry);
+    const request = pendingRequests.find(req => req.requestId === requestId);
 
-    writeContract({
-      address: HEALTH_VAULT_ADDRESS as `0x${string}`,
-      abi: HEALTH_VAULT_ABI,
-      functionName: 'grantAccess',
-      args: [requestId as `0x${string}`, BigInt(expiryTimestamp)],
-    });
+    if (useMockData) {
+      // Demo mode - update UI
+      setPendingRequests(prev => prev.filter(req => req.requestId !== requestId));
+
+      if (request) {
+        const newAccess: GrantedAccess = {
+          doctor: request.requester,
+          expiryTime: expiryTimestamp,
+          institution: request.institution,
+          doctorName: request.doctorName,
+          grantedAt: Date.now()
+        };
+        setGrantedAccesses(prev => [newAccess, ...prev]);
+      }
+
+      toast({
+        title: "Access Granted",
+        description: `${request?.institution || "Healthcare provider"} can now access your records`,
+      });
+    } else {
+      // Production mode - interact with blockchain
+      writeContract({
+        address: HEALTH_VAULT_ADDRESS as `0x${string}`,
+        abi: HEALTH_VAULT_ABI,
+        functionName: 'grantAccess',
+        args: [requestId as `0x${string}`, BigInt(expiryTimestamp)],
+      });
+    }
   };
 
   const handleRevokeAccess = (doctorAddress: string) => {
-    writeContract({
-      address: HEALTH_VAULT_ADDRESS as `0x${string}`,
-      abi: HEALTH_VAULT_ABI,
-      functionName: 'revokeAccess',
-      args: [doctorAddress as `0x${string}`],
-    });
+    const access = grantedAccesses.find(acc => acc.doctor === doctorAddress);
+
+    if (useMockData) {
+      // Demo mode - update UI
+      setGrantedAccesses(prev => prev.filter(acc => acc.doctor !== doctorAddress));
+      toast({
+        title: "Access Revoked",
+        description: `${access?.institution || "Healthcare provider"}'s access has been revoked`,
+      });
+    } else {
+      // Production mode - interact with blockchain
+      writeContract({
+        address: HEALTH_VAULT_ADDRESS as `0x${string}`,
+        abi: HEALTH_VAULT_ABI,
+        functionName: 'revokeAccess',
+        args: [doctorAddress as `0x${string}`],
+      });
+    }
   };
 
   if (!isConnected) {
@@ -165,12 +284,19 @@ export function AccessControl() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <UserCheck className="w-5 h-5 text-warning" />
-                        <h3 className="font-semibold">Access Request</h3>
+                        <h3 className="font-semibold">
+                          {request.institution || "Access Request"}
+                        </h3>
                       </div>
 
                       <div className="space-y-1 text-sm">
+                        {request.doctorName && (
+                          <p className="text-muted-foreground">
+                            <span className="font-medium">Doctor:</span> {request.doctorName}
+                          </p>
+                        )}
                         <p className="text-muted-foreground">
-                          <span className="font-medium">From:</span>{" "}
+                          <span className="font-medium">Address:</span>{" "}
                           <span className="font-mono">{request.requester.slice(0, 6)}...{request.requester.slice(-4)}</span>
                         </p>
                         <div className="flex items-center gap-2 text-muted-foreground">
@@ -249,14 +375,27 @@ export function AccessControl() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <Shield className="w-5 h-5 text-success" />
-                        <h3 className="font-semibold">Active Access</h3>
+                        <h3 className="font-semibold">
+                          {access.institution || "Active Access"}
+                        </h3>
                       </div>
 
                       <div className="space-y-1 text-sm">
+                        {access.doctorName && (
+                          <p className="text-muted-foreground">
+                            <span className="font-medium">Doctor:</span> {access.doctorName}
+                          </p>
+                        )}
                         <p className="text-muted-foreground">
-                          <span className="font-medium">Doctor:</span>{" "}
+                          <span className="font-medium">Address:</span>{" "}
                           <span className="font-mono">{access.doctor.slice(0, 6)}...{access.doctor.slice(-4)}</span>
                         </p>
+                        {access.grantedAt && (
+                          <p className="text-muted-foreground">
+                            <span className="font-medium">Granted:</span>{" "}
+                            {new Date(access.grantedAt).toLocaleDateString()}
+                          </p>
+                        )}
                         <p className="text-muted-foreground">
                           <span className="font-medium">Expires:</span>{" "}
                           {access.expiryTime === 0
