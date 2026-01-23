@@ -8,6 +8,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import checkinRoutes from "./routes/checkin.js";
 import recordsRoutes from "./routes/records.js";
 import smsWebhookRoutes from "./routes/smsWebhook.js";
@@ -16,6 +19,23 @@ import ussdRoutes from "./routes/ussd.js";
 
 // Load environment variables from .env file
 dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Clear SMS replies data on server startup (development mode)
+const clearSMSData = () => {
+  const smsDataFile = path.join(__dirname, "data", "sms_replies.json");
+  try {
+    if (fs.existsSync(smsDataFile)) {
+      fs.unlinkSync(smsDataFile);
+      console.log("🗑️  Cleared SMS replies data from previous run");
+    }
+  } catch (error) {
+    console.error("Error clearing SMS data:", error);
+  }
+};
+
+clearSMSData();
 
 const app = express();
 const PORT = process.env.PORT || 3000;

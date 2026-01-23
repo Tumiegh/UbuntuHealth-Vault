@@ -11,6 +11,7 @@ import {
   getRepliesSummary,
   markReplyAsProcessed,
 } from "../services/smsReplyService.js";
+import { sendConfirmationSMS } from "../services/smsService.js";
 
 const router = express.Router();
 
@@ -214,6 +215,64 @@ router.get("/summary", async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to fetch summary",
+    });
+  }
+});
+
+/**
+ * POST /api/sms/send-confirmation
+ * Send a confirmation SMS to patient after processing their YES/NO response
+ *
+ * Request body:
+ * {
+ *   "phoneNumber": "+27XXXXXXXXX",
+ *   "patientName": "John Doe",
+ *   "response": "YES|NO"
+ * }
+ *
+ * Response:
+ * {
+ *   "success": true,
+ *   "message": "Confirmation SMS sent"
+ * }
+ */
+router.post("/send-confirmation", async (req, res) => {
+  try {
+    const { phoneNumber, patientName, response } = req.body;
+
+    if (!phoneNumber || !patientName || !response) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: phoneNumber, patientName, response",
+      });
+    }
+
+    if (!["YES", "NO"].includes(response.toUpperCase())) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid response. Expected YES or NO.",
+      });
+    }
+
+    console.log(`📤 Sending confirmation SMS to ${phoneNumber} for response: ${response}`);
+
+    // Send confirmation SMS
+    await sendConfirmationSMS(phoneNumber, patientName, response);
+
+    console.log(`✅ Confirmation SMS sent successfully to ${phoneNumber}`);
+
+    res.json({
+      success: true,
+      message: "Confirmation SMS sent",
+      phoneNumber: phoneNumber,
+      response: response,
+    });
+  } catch (error) {
+    console.error("Error sending confirmation SMS:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to send confirmation SMS",
+      message: error.message,
     });
   }
 });

@@ -118,3 +118,36 @@ export const fetchSMSSummary = async () => {
 
   return response.json();
 };
+
+/**
+ * Sends a confirmation SMS to a patient
+ * @param {string} phoneNumber - Patient phone number
+ * @param {string} patientName - Patient's full name
+ * @param {string} response - Patient's response (YES or NO)
+ * @returns {Promise<Object>} - API response
+ * @throws {Error} - If the API request fails
+ */
+export const sendConfirmationSMS = async (
+  phoneNumber: string,
+  patientName: string,
+  response: string
+) => {
+  const res = await fetch(`${API_URL}/api/sms/send-confirmation`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      phoneNumber,
+      patientName,
+      response,
+    }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Failed to send confirmation SMS");
+  }
+
+  return res.json();
+};

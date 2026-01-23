@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { submitCheckIn } from "@/api/checkinService";
+import { useToast } from "@/hooks/use-toast";
+import { fetchSMSReplies, markSMSReplyAsProcessed, sendConfirmationSMS } from "@/api/smsService";
 
 /**
  * Initial mock data for patients waiting in the queue
@@ -99,7 +101,14 @@ const getStatusBadge = (status: string) => {
   }
 };
 
+// Normalize phone number by removing spaces and special characters
+const normalizePhoneNumber = (phone: string) => {
+  return phone.replace(/[\s\-\(\)]/g, '');
+};
+
 const AdminDashboard = () => {
+  const { toast } = useToast();
+
   // Search query state for filtering patients
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -113,8 +122,20 @@ const AdminDashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Dynamic patient queue state - starts with initial mock data
-  const [waitingPatients, setWaitingPatients] = useState(initialWaitingPatients);
-  const [completedPatients, setCompletedPatients] = useState<any[]>([]);
+  const [waitingPatients, setWaitingPatients] = useState(() => {
+    const stored = localStorage.getItem("waitingPatients");
+    return stored ? JSON.parse(stored) : initialWaitingPatients;
+  });
+  const [completedPatients, setCompletedPatients] = useState<any[]>(() => {
+    const stored = localStorage.getItem("completedPatients");
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  // Track phone number to patient ID mapping for SMS replies
+  const [phoneToPatientMap, setPhoneToPatientMap] = useState(() => {
+    const stored = localStorage.getItem("phoneToPatientMap");
+    return stored ? JSON.parse(stored) : {};
+  });
   
   // Form data for new check-in request
   const [formData, setFormData] = useState({
@@ -123,24 +144,181 @@ const AdminDashboard = () => {
     idNumber: "",
   });
 
-  // Check for completed patients from localStorage
-  React.useEffect(() => {
-    const checkCompletedPatients = () => {
-      const completed = JSON.parse(localStorage.getItem('completedPatients') || '[]');
-      if (completed.length > completedPatients.length) {
-        const newCompleted = completed.slice(completedPatients.length);
-        setCompletedPatients(completed);
+  // Persist waiting patients to localStorage
+  useEffect(() => {
+    localStorage.setItem("waitingPatients", JSON.stringify(waitingPatients));
+  }, [waitingPatients]);
+
+  // Persist completed patients to localStorage
+  useEffect(() => {
+    localStorage.setItem("completedPatients", JSON.stringify(completedPatients));
+  }, [completedPatients]);
+
+  // Persist phone to patient mapping to localStorage
+  useEffect(() => {
+    localStorage.setItem("phoneToPatientMap", JSON.stringify(phoneToPatientMap));
+  }, [phoneToPatientMap]);
+
+  // Poll for SMS replies and update patient status
+  useEffect(() => {
+    const pollSMSReplies = async () => {
+      try {
+        console.log("🔄 Starting SMS polling...");
         
-        // Remove completed patients from waiting queue
-        newCompleted.forEach((completedPatient: any) => {
-          setWaitingPatients(prev => prev.filter(p => p.id !== completedPatient.id));
-        });
+        // Fetch only unprocessed replies
+        const response = await fetchSMSReplies({ processed: false });
+        
+        console.log("📱 Polling for SMS replies...");
+        console.log("Current phoneToPatientMap:", phoneToPatientMap);
+        console.log("API Response:", response);
+        
+        // Extract replies array from response object
+        const replies = response?.replies || [];
+        
+        console.log("Unprocessed replies array:", replies);
+        console.log("Waiting patients:", waitingPatients);
+        
+        if (!replies || replies.length === 0) {
+          console.log("No unprocessed replies found");
+          return;
+        }
+
+        console.log(`Found ${replies.length} unprocessed replies`);
+        
+        for (const reply of replies) {
+          try {
+            console.log(`\n📨 Processing reply:`, reply);
+            
+            const phoneNumber = normalizePhoneNumber(reply.phoneNumber);
+            const response = reply.response?.toUpperCase();
+            
+            console.log(`Normalized phone: ${phoneNumber}, Response: ${response}`);
+            
+            // Check all normalized keys in the map
+            let patientId = null;
+            for (const mapPhone in phoneToPatientMap) {
+              if (normalizePhoneNumber(mapPhone) === phoneNumber) {
+                patientId = phoneToPatientMap[mapPhone];
+                console.log(`✓ Found matching phone in map: ${mapPhone} → Patient ID ${patientId}`);
+                break;
+              }
+            }
+
+            console.log(`Checking reply from ${reply.phoneNumber} (normalized: ${phoneNumber}): ${response} → Patient ID: ${patientId}`);
+
+            if (!patientId) {
+              console.warn(`⚠️ No patient found for phone: ${reply.phoneNumber}`);
+              continue;
+            }
+
+            if (reply.processed) {
+              console.log(`⏭️ Reply already processed, skipping`);
+              continue;
+            }
+
+            const patient = waitingPatients.find(p => p.id === patientId);
+            
+            if (!patient) {
+              console.warn(`⚠️ Patient with ID ${patientId} not found in waitingPatients`);
+              continue;
+            }
+            
+            console.log(`✓ Found patient: ${patient.name}`);
+            
+            if (response === "YES") {
+              console.log(`✅ Processing YES response for patient ${patient.name}`);
+              
+              // Update status to consent_granted
+              setWaitingPatients(prev => {
+                const updated = prev.map(p =>
+                  p.id === patientId ? { ...p, status: "consent_granted" } : p
+                );
+                console.log("Updated waitingPatients:", updated);
+                return updated;
+              });
+
+              toast({
+                title: "Access Granted ✓",
+                description: `${patient.name} has given consent. Access has been granted to the institution.`,
+                duration: 5000,
+              });
+
+              // Send confirmation SMS to patient
+              try {
+                console.log(`📤 Sending confirmation SMS to ${reply.phoneNumber}...`);
+                await sendConfirmationSMS(reply.phoneNumber, patient.name, "YES");
+                console.log(`✓ Confirmation SMS sent to ${reply.phoneNumber}`);
+              } catch (smsError) {
+                console.error("❌ Error sending confirmation SMS:", smsError);
+              }
+
+              // Mark reply as processed to avoid re-processing
+              try {
+                console.log(`⏱️ Marking reply ${reply.id} as processed...`);
+                await markSMSReplyAsProcessed(reply.id);
+                console.log(`✓ Marked reply ${reply.id} as processed`);
+              } catch (markError) {
+                console.error("❌ Error marking reply as processed:", markError);
+              }
+            } else if (response === "NO") {
+              console.log(`❌ Processing NO response for patient ${patient.name}`);
+              
+              // Remove patient from queue
+              setWaitingPatients(prev => {
+                const updated = prev.filter(p => p.id !== patientId);
+                console.log("Updated waitingPatients after removal:", updated);
+                return updated;
+              });
+              
+              setCompletedPatients(prev => {
+                const updated = [
+                  ...prev,
+                  { ...patient, completedAt: new Date().toLocaleTimeString(), status: "declined" }
+                ];
+                console.log("Updated completedPatients:", updated);
+                return updated;
+              });
+
+              toast({
+                title: "Access Declined ✗",
+                description: `${patient.name} has declined access. No access has been given to the institution.`,
+                duration: 5000,
+              });
+
+              // Send confirmation SMS to patient
+              try {
+                console.log(`📤 Sending confirmation SMS to ${reply.phoneNumber}...`);
+                await sendConfirmationSMS(reply.phoneNumber, patient.name, "NO");
+                console.log(`✓ Confirmation SMS sent to ${reply.phoneNumber}`);
+              } catch (smsError) {
+                console.error("❌ Error sending confirmation SMS:", smsError);
+              }
+
+              // Mark reply as processed to avoid re-processing
+              try {
+                console.log(`⏱️ Marking reply ${reply.id} as processed...`);
+                await markSMSReplyAsProcessed(reply.id);
+                console.log(`✓ Marked reply ${reply.id} as processed`);
+              } catch (markError) {
+                console.error("❌ Error marking reply as processed:", markError);
+              }
+            } else {
+              console.warn(`⚠️ Invalid response format: ${response}`);
+            }
+          } catch (replyError) {
+            console.error("Error processing individual reply:", replyError);
+          }
+        }
+      } catch (error) {
+        console.error("❌ Error in polling function:", error);
       }
     };
-    
-    const interval = setInterval(checkCompletedPatients, 1000);
+
+    const interval = setInterval(pollSMSReplies, 5000);
+    // Run immediately on mount
+    pollSMSReplies();
     return () => clearInterval(interval);
-  }, [completedPatients.length]);
+  }, [phoneToPatientMap, waitingPatients, completedPatients, toast]);
 
   // Error message state for form validation
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -203,10 +381,21 @@ const AdminDashboard = () => {
         reason: "New check-in"
       };
       
-      console.log("Check-in successful:", response);
+      console.log("✅ Check-in successful:", response);
+      console.log("📞 Phone number format stored:", response.phoneNumber);
 
       // Add new patient to the queue
       setWaitingPatients(prev => [newPatient, ...prev]);
+
+      // Store phone to patient ID mapping for SMS reply processing
+      setPhoneToPatientMap(prev => {
+        const updated = {
+          ...prev,
+          [response.phoneNumber]: newPatient.id
+        };
+        console.log("🗺️ Updated phoneToPatientMap:", updated);
+        return updated;
+      });
 
       // Reset form and close dialog
       setFormData({
@@ -247,6 +436,17 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="flex items-center justify-between sm:justify-end gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+                className="text-xs"
+              >
+                🗑️ Clear Data
+              </Button>
               <span className="text-sm text-muted-foreground truncate">Soweto General Clinic</span>
               <div className="w-9 h-9 rounded-full bg-secondary/10 flex items-center justify-center">
                 <User className="w-5 h-5 text-secondary" />

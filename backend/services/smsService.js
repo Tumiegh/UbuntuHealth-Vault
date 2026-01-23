@@ -45,15 +45,23 @@ export const sendAccessRequestSMS = async (phoneNumber, patientName) => {
 };
 
 /**
- * Sends a reminder SMS to a patient with pending access request
+ * Sends a confirmation SMS to a patient after they respond to access request
  * @param {string} phoneNumber - Patient phone number in E.164 format (+27XXXXXXXXXX)
  * @param {string} patientName - Patient's full name
+ * @param {string} response - Patient's response (YES or NO)
  * @returns {Promise<Object>} - API response with message status
  * @throws {Error} - If SMS sending fails
  */
-export const sendReminderSMS = async (phoneNumber, patientName) => {
+export const sendConfirmationSMS = async (phoneNumber, patientName, response) => {
   try {
-    const message = `Hi ${patientName}, reminder: your clinic is waiting for you to grant access to your medical records. Reply YES to grant access.`;
+    let message;
+    if (response.toUpperCase() === "YES") {
+      message = `Hi ${patientName}, thank you! Your access request has been approved. You can now proceed with your consultation.`;
+    } else if (response.toUpperCase() === "NO") {
+      message = `Hi ${patientName}, your access request has been declined. If you change your mind, please contact your clinic.`;
+    } else {
+      throw new Error("Invalid response type. Expected YES or NO.");
+    }
 
     const sendOptions = {
       to: [phoneNumber],
@@ -63,15 +71,15 @@ export const sendReminderSMS = async (phoneNumber, patientName) => {
     // Add shortcode if configured in environment
     if (process.env.AFRICAS_TALKING_SHORTCODE) {
       sendOptions.from = process.env.AFRICAS_TALKING_SHORTCODE;
-      console.log(`📤 Sending reminder SMS from shortcode: ${process.env.AFRICAS_TALKING_SHORTCODE}`);
+      console.log(`📤 Sending confirmation SMS from shortcode: ${process.env.AFRICAS_TALKING_SHORTCODE}`);
     }
 
     const result = await SMS.send(sendOptions);
 
-    console.log("Reminder SMS sent successfully:", result);
+    console.log("Confirmation SMS sent successfully:", result);
     return result;
   } catch (error) {
-    console.error("Failed to send reminder SMS:", error);
+    console.error("Failed to send confirmation SMS:", error);
     throw error;
   }
 };
