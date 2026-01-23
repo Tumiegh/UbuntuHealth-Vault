@@ -144,7 +144,6 @@ const AdminDashboard = () => {
     idNumber: "",
   });
 
-<<<<<<< HEAD
   const handleAssignToDoctor = (patientId: number, doctorId: number, doctorName: string) => {
     setWaitingPatients(prev => 
       prev.map(patient => 
@@ -168,13 +167,7 @@ const AdminDashboard = () => {
     
     alert(`Patient assigned to ${doctorName}`);
   };
-  React.useEffect(() => {
-    const checkCompletedPatients = () => {
-      const completed = JSON.parse(localStorage.getItem('completedPatients') || '[]');
-      if (completed.length > completedPatients.length) {
-        const newCompleted = completed.slice(completedPatients.length);
-        setCompletedPatients(completed);
-=======
+
   // Persist waiting patients to localStorage
   useEffect(() => {
     localStorage.setItem("waitingPatients", JSON.stringify(waitingPatients));
@@ -195,7 +188,6 @@ const AdminDashboard = () => {
     const pollSMSReplies = async () => {
       try {
         console.log("🔄 Starting SMS polling...");
->>>>>>> 69ac3abe88515c622871c8a92dd479eeee69308d
         
         // Fetch only unprocessed replies
         const response = await fetchSMSReplies({ processed: false });
@@ -345,36 +337,10 @@ const AdminDashboard = () => {
         console.error("❌ Error in polling function:", error);
       }
     };
-<<<<<<< HEAD
-    
-    // Check for patient consent updates
-    const checkConsentUpdates = () => {
-      const consentUpdates = JSON.parse(localStorage.getItem('consentUpdates') || '[]');
-      consentUpdates.forEach((update: any) => {
-        setWaitingPatients(prev => 
-          prev.map(patient => 
-            patient.id === update.patientId 
-              ? { ...patient, status: update.status }
-              : patient
-          )
-        );
-      });
-      // Clear processed updates
-      if (consentUpdates.length > 0) {
-        localStorage.removeItem('consentUpdates');
-      }
-    };
-    
-    const interval = setInterval(() => {
-      checkCompletedPatients();
-      checkConsentUpdates();
-    }, 1000);
-=======
 
     const interval = setInterval(pollSMSReplies, 5000);
     // Run immediately on mount
     pollSMSReplies();
->>>>>>> 69ac3abe88515c622871c8a92dd479eeee69308d
     return () => clearInterval(interval);
   }, [phoneToPatientMap, waitingPatients, completedPatients, toast]);
 
