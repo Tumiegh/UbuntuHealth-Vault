@@ -17,11 +17,17 @@ A secure, blockchain-powered healthcare platform for managing patient medical re
 
 ## 📚 Documentation
 
-### Quick Links
+### 🎯 Start Here
+- **[⚡ Tech Stack Quick Reference](TECH_STACK_QUICK_REFERENCE.md)** - **NEW!** Quick reference for all technologies
+- **[🏗️ Technical Architecture](TECHNICAL_ARCHITECTURE.md)** - **NEW!** Complete technical stack explanation (1000+ lines)
+
+### 📖 Setup & Deployment
 - **[🚀 Blockchain Integration Complete](BLOCKCHAIN_INTEGRATION_COMPLETE.md)** - Overview of blockchain features
 - **[📋 Smart Contracts Setup](SMART_CONTRACTS_SETUP.md)** - Detailed setup guide for smart contracts
-- **[📝 Integration Summary](INTEGRATION_SUMMARY.md)** - Complete list of integrated components
 - **[✅ Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** - Step-by-step deployment guide
+- **[📝 Integration Summary](INTEGRATION_SUMMARY.md)** - Complete list of integrated components
+
+### 🔧 Configuration Guides
 - **[🔧 Backend Setup](BACKEND_SETUP.md)** - Backend configuration guide
 - **[🔌 WalletConnect Setup](WALLETCONNECT_SETUP.md)** - WalletConnect integration guide
 
