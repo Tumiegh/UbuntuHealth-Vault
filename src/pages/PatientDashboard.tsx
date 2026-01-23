@@ -14,6 +14,7 @@ import {
 import { Link } from "react-router-dom";
 import { useAccount } from 'wagmi';
 import ConnectButton from "@/components/ConnectButton";
+import { ViewRecords } from "@/components/ViewRecords";
 import { useState } from "react";
 
 // Mock data
@@ -78,6 +79,7 @@ const healthTimeline = [
 const PatientDashboard = () => {
   const { address, isConnected } = useAccount();
   const [consentRequests, setConsentRequests] = useState(initialConsentRequests);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleConsentResponse = (requestId: number, approved: boolean) => {
     setConsentRequests(prev => prev.filter(req => req.id !== requestId));
@@ -143,9 +145,16 @@ const PatientDashboard = () => {
               </div>
             </div>
             <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-              <Button variant="ghost" size="icon" className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
+                {consentRequests.length > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
+                )}
               </Button>
               <ConnectButton />
               <div className="flex items-center gap-3">
@@ -161,6 +170,46 @@ const PatientDashboard = () => {
           </div>
         </div>
       </header>
+
+      {/* Notification Dropdown */}
+      {showNotifications && (
+        <div className="fixed top-20 right-4 z-50 w-80 max-w-[calc(100vw-2rem)]">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-card border border-border rounded-xl shadow-xl p-4"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold">Notifications</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowNotifications(false)}
+              >
+                Close
+              </Button>
+            </div>
+            {consentRequests.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No new notifications
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {consentRequests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="p-3 bg-muted rounded-lg"
+                  >
+                    <p className="text-sm font-medium">{request.institution}</p>
+                    <p className="text-xs text-muted-foreground">{request.requestedAt}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
 
       <main className="container px-4 mx-auto py-8">
         <div className="grid lg:grid-cols-3 gap-8">
@@ -223,11 +272,20 @@ const PatientDashboard = () => {
               </div>
             </motion.section>
 
-            {/* Health Timeline */}
+            {/* Medical Records */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <ViewRecords />
+            </motion.section>
+
+            {/* Health Timeline */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
                 <h2 className="text-lg sm:text-xl font-display font-semibold">Health Timeline</h2>
