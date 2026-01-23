@@ -66,6 +66,13 @@ export const HEALTH_VAULT_ABI = [
     "type": "function"
   },
   {
+    "inputs": [{"internalType": "address", "name": "_patient", "type": "address"}],
+    "name": "getPendingRequests",
+    "outputs": [{"internalType": "bytes32[]", "name": "", "type": "bytes32[]"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [{"internalType": "bytes32", "name": "_requestId", "type": "bytes32"}],
     "name": "getAccessRequest",
     "outputs": [{
@@ -91,6 +98,26 @@ export const HEALTH_VAULT_ABI = [
       {"indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256"}
     ],
     "name": "RecordAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "address", "name": "patient", "type": "address"},
+      {"indexed": false, "internalType": "uint256", "name": "recordIndex", "type": "uint256"}
+    ],
+    "name": "RecordRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "bytes32", "name": "requestId", "type": "bytes32"},
+      {"indexed": true, "internalType": "address", "name": "patient", "type": "address"},
+      {"indexed": true, "internalType": "address", "name": "doctor", "type": "address"},
+      {"indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256"}
+    ],
+    "name": "AccessRequested",
     "type": "event"
   },
   {

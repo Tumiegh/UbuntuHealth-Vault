@@ -11,6 +11,8 @@ import bodyParser from "body-parser";
 import checkinRoutes from "./routes/checkin.js";
 import recordsRoutes from "./routes/records.js";
 import smsWebhookRoutes from "./routes/smsWebhook.js";
+import accessRoutes from "./routes/access.js";
+import ussdRoutes from "./routes/ussd.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -48,6 +50,8 @@ app.get("/health", (req, res) => {
 app.use("/api/checkin", checkinRoutes);
 app.use("/api/records", recordsRoutes);
 app.use("/api/sms", smsWebhookRoutes);
+app.use("/api/access", accessRoutes);
+app.use("/api/ussd", ussdRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -101,5 +105,14 @@ app.listen(PORT, () => {
     console.warn("⚠️  WARNING: ENCRYPTION_KEY not set or too short!");
     console.warn("   Using default key (NOT SECURE FOR PRODUCTION)");
     console.warn("   Set a strong 32+ character ENCRYPTION_KEY in .env\n");
+  }
+
+  // Check if blockchain configuration is set
+  if (!process.env.BASE_SEPOLIA_RPC_URL || !process.env.HEALTH_VAULT_CONTRACT_ADDRESS) {
+    console.warn("⚠️  WARNING: Blockchain configuration not complete!");
+    console.warn("   Blockchain features will not work until you set:");
+    console.warn("   - BASE_SEPOLIA_RPC_URL");
+    console.warn("   - HEALTH_VAULT_CONTRACT_ADDRESS");
+    console.warn("\n   Deploy the smart contract first using: cd contracts && npm run deploy\n");
   }
 });
