@@ -10,6 +10,7 @@ import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import checkinRoutes from "./routes/checkin.js";
 import recordsRoutes from "./routes/records.js";
+import smsWebhookRoutes from "./routes/smsWebhook.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -20,6 +21,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
 
 // Middleware
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: FRONTEND_URL,
@@ -45,6 +47,7 @@ app.get("/health", (req, res) => {
 // API Routes
 app.use("/api/checkin", checkinRoutes);
 app.use("/api/records", recordsRoutes);
+app.use("/api/sms", smsWebhookRoutes);
 
 // 404 handler
 app.use((req, res) => {

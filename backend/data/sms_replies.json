@@ -1,0 +1,42 @@
+[
+  {
+    "id": "test_msg_001",
+    "phoneNumber": "+27712345678",
+    "response": "YES",
+    "rawText": "YES",
+    "timestamp": "2026-01-22T23:30:27.339Z",
+    "linkId": null,
+    "processed": false,
+    "processedAt": null
+  },
+  {
+    "id": "test_msg_001",
+    "phoneNumber": "+27712345678",
+    "response": "YES",
+    "rawText": "YES",
+    "timestamp": "2026-01-22T23:45:47.107Z",
+    "linkId": null,
+    "processed": false,
+    "processedAt": null
+  },
+  {
+    "id": "82e1b31f-1b8d-48aa-b2eb-b9547a253cbf",
+    "phoneNumber": "+27712345678",
+    "response": "NO",
+    "rawText": "NO",
+    "timestamp": "2026-01-23 00:28:27",
+    "linkId": "4a28af2c-c55b-4c5d-bedf-c7d4d47ee463",
+    "processed": false,
+    "processedAt": null
+  },
+  {
+    "id": "5ab5630b-241a-48dd-bdba-9a0a4d3adfcd",
+    "phoneNumber": "+27712345678",
+    "response": "YES",
+    "rawText": "YES",
+    "timestamp": "2026-01-23 00:28:38",
+    "linkId": "9cfce648-439b-4161-9adc-d0b81572caa1",
+    "processed": false,
+    "processedAt": null
+  }
+]

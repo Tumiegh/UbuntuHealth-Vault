@@ -23,10 +23,18 @@ export const sendAccessRequestSMS = async (phoneNumber, patientName) => {
   try {
     const message = `Hi ${patientName}, your clinic has requested access to your medical records. Reply YES to grant access or NO to deny.`;
 
-    const result = await SMS.send({
+    const sendOptions = {
       to: [phoneNumber],
       message: message,
-    });
+    };
+
+    // Add shortcode if configured in environment
+    if (process.env.AFRICAS_TALKING_SHORTCODE) {
+      sendOptions.from = process.env.AFRICAS_TALKING_SHORTCODE;
+      console.log(`📤 Sending SMS from shortcode: ${process.env.AFRICAS_TALKING_SHORTCODE}`);
+    }
+
+    const result = await SMS.send(sendOptions);
 
     console.log("SMS sent successfully:", result);
     return result;
@@ -47,10 +55,18 @@ export const sendReminderSMS = async (phoneNumber, patientName) => {
   try {
     const message = `Hi ${patientName}, reminder: your clinic is waiting for you to grant access to your medical records. Reply YES to grant access.`;
 
-    const result = await SMS.send({
+    const sendOptions = {
       to: [phoneNumber],
       message: message,
-    });
+    };
+
+    // Add shortcode if configured in environment
+    if (process.env.AFRICAS_TALKING_SHORTCODE) {
+      sendOptions.from = process.env.AFRICAS_TALKING_SHORTCODE;
+      console.log(`📤 Sending reminder SMS from shortcode: ${process.env.AFRICAS_TALKING_SHORTCODE}`);
+    }
+
+    const result = await SMS.send(sendOptions);
 
     console.log("Reminder SMS sent successfully:", result);
     return result;
