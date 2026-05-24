@@ -1,8 +1,5 @@
 # Ubuntu Health Vault Business Plan
 
-**Submitted to:** Oakvale Invest  
-**Date:** May 2026
-
 ---
 
 ## 1. Business Overview
@@ -143,7 +140,6 @@ Completed systems include:
 ## 5. Team
 
 ### Founder
-**Londiwe [Surname]** - Founder and Lead Engineer
 
 Built the entire MVP independently, including:
 - Frontend
@@ -196,28 +192,6 @@ Current hiring goal:
 - Security audit completion
 - Growth to 15+ paying clinics
 - Expansion planning into broader African markets
-
----
-
-## 8. Portfolio and Technical Evidence
-
-### Built Technology
-- Solidity smart contracts
-- IPFS storage integration
-- React dashboards
-- SMS/USSD workflows
-- AES-256 encryption
-- Blockchain audit system
-
-### Development Stack
-- React
-- TypeScript
-- Node.js
-- Solidity
-- Hardhat
-- Ethers.js
-- WalletConnect
-- IPFS
 
 ---
 
