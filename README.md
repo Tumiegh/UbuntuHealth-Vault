@@ -13,7 +13,9 @@ A secure, blockchain-powered healthcare platform for managing patient medical re
 - 🔐 **Smart Contracts** - Immutable access control and record management
 - 📦 **IPFS Storage** - Encrypted medical records stored on IPFS
 - 📲 **USSD Interface** - Feature phone support for access control
-- 🔑 **Web3 Wallet** - WalletConnect integration for secure authentication
+- 🔑 **Smart Account Authentication** - Sign in with email address, phone number (SMS OTP), or Web3 wallet — no seed phrases required
+- 🤖 **AI-Powered Record Summaries** - Claude AI automatically generates plain-language summaries of patient medical history for doctors and patients
+- 📅 **AI Follow-Up Booking** - AI assistant suggests and books follow-up appointments based on consultation notes and clinical outcomes
 
 ## 📚 Documentation
 
@@ -165,6 +167,41 @@ UbuntuHealth-Vault/
 │       └── phoneValidator.js      # Phone number validation
 └── package.json
 ```
+
+## Smart Account Authentication
+
+Users can sign in without a crypto wallet. UbuntuHealth Vault supports three authentication paths:
+
+| Method | How it works |
+|---|---|
+| **Email** | Enter your email → receive a magic link or OTP → sign in |
+| **Phone / SMS** | Enter your South African mobile number → receive an SMS OTP via Africa's Talking → sign in |
+| **Web3 Wallet** | Connect via WalletConnect as before (for users who prefer self-custody) |
+
+All three methods create a **smart account** (ERC-4337 account abstraction) on Base L2, meaning the patient's blockchain identity is tied to their credentials — not a seed phrase they could lose. Gas fees are sponsored so patients never need to hold ETH.
+
+## AI Features
+
+### Record Summaries
+
+After a doctor's session is completed or when a patient views their dashboard, **Claude AI** reads the stored IPFS records and generates a concise plain-language summary:
+
+- **For doctors** — a pre-consultation briefing: chronic conditions, recent visits, active medications, and any flags (allergies, abnormal labs).
+- **For patients** — an easy-to-understand overview of their health history without medical jargon.
+
+Summaries are generated on demand and are never stored; they are re-derived from the encrypted source records each time to ensure freshness.
+
+### AI Follow-Up Booking
+
+When a doctor completes a session, the AI reviews the clinical notes and, where a follow-up is clinically indicated, it:
+
+1. Suggests a recommended follow-up timeframe (e.g., "2 weeks — blood pressure recheck").
+2. Presents available appointment slots from the clinic's calendar.
+3. Sends the patient an SMS confirmation with the booking details via Africa's Talking.
+
+Patients can reschedule or cancel by replying to the SMS, keeping the interaction entirely on a feature phone if needed.
+
+---
 
 ## SMS Integration
 
