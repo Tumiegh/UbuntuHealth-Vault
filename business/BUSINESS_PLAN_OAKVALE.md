@@ -19,7 +19,7 @@ This problem affects an estimated 48 million public healthcare users in South Af
 
 **Our Solution**
 
-Ubuntu Health Vault puts the patient in control. Patients own a cryptographic wallet that acts as their digital health identity. Their medical records are encrypted with AES-256 and stored on IPFS (decentralised, tamper-proof storage). Only the encrypted file hash lives on a blockchain smart contract — meaning no single company, government, or server can modify or delete it.
+Ubuntu Health Vault puts the patient in control. Patients sign in using a **smart account** (ERC-4337 account abstraction) — a cryptographic wallet that acts as their health identity, but without the friction of seed phrases. Onboarding is as simple as email or social login; full on-chain ownership is preserved under the hood. Their medical records are encrypted with AES-256 and stored on IPFS (decentralised, tamper-proof storage). Only the encrypted file hash lives on a blockchain smart contract — meaning no single company, government, or server can modify or delete it.
 
 When a doctor or clinic needs access, they send a consent request via SMS. The patient approves or denies from any phone — including basic feature phones via USSD (*134*HEALTH#). Access is time-limited (24 hours, 7 days, 30 days, or permanent), audited on-chain, and revocable at any time. Every access event is logged immutably.
 
@@ -33,7 +33,7 @@ Automation and on-chain data intelligence are foundational, not optional:
 - **Event-driven architecture** — blockchain events trigger real-time SMS notifications, keeping patients informed without manual intervention.
 - **USSD automation** routes feature-phone users through a decision tree to approve/deny access requests, enabling participation without smartphones or internet.
 - **Encrypted data pipeline** automates AES-256 encryption before any file leaves the client, ensuring no unencrypted health data ever touches a server.
-- **AI integration (in-roadmap):** The data layer is being designed to support clinical decision support AI — specifically, a model that can flag anomalies in a patient's longitudinal record and surface relevant history to the treating doctor at point of care. Because records are standardised and cryptographically verified, they are a high-quality training and inference source that centralised EMR systems cannot match.
+- **AI integration (live):** AI is implemented across three workflows: (1) **pre-consultation summaries** — before a patient sees a doctor, the AI reads their consented record history and generates a structured briefing so the doctor has full context from the first moment; (2) **follow-up and appointment booking** — after a consultation, the AI analyses doctor notes and automatically initiates scheduling of follow-ups or referrals where indicated; (3) **check-up scheduling** — the AI monitors patient records for overdue preventive care and surfaces proactive scheduling recommendations to patients and their clinic. Because records are standardised, encrypted, and cryptographically verified, they are a high-quality inference source that centralised EMR systems cannot match.
 
 ---
 
@@ -110,7 +110,10 @@ Clinics currently pay R2,000–R8,000/month for basic practice management softwa
 - IPFS integration via Storacha for decentralised encrypted file storage
 - Africa's Talking SMS and USSD integration (access requests, consent responses, queue notifications)
 - AES-256 encryption layer — records encrypted client-side before upload
-- WalletConnect/Reown integration for wallet-based authentication
+- **Smart account authentication** (ERC-4337 account abstraction) — patients log in without seed phrases or passwords; full cryptographic ownership is maintained via account abstraction wallets
+- **AI-powered pre-consultation summaries** — before each appointment, an AI model reads the patient's consented record history and generates a structured clinical briefing for the attending doctor
+- **AI-driven appointment and follow-up booking** — the AI analyses post-consultation notes and automatically initiates scheduling of follow-ups, referrals, and specialist appointments where indicated
+- **AI check-up scheduling** — proactive monitoring of patient records for overdue preventive care, with automated scheduling recommendations surfaced to patients and their clinic
 - Comprehensive audit trail on-chain
 - Full technical documentation (8 documents, ~3,000+ lines of architecture notes)
 
@@ -208,7 +211,7 @@ The founder has demonstrated the ability to ship a complex, multi-layer technica
 1. **Month 2:** Mainnet deployment (Base mainnet) + security audit complete
 2. **Month 3:** First 3 paid pilot clinics signed and live
 3. **Month 6:** 10 paying clinics, MRR > R20,000
-4. **Month 9:** Hire first additional engineer; begin AI-assisted clinical summary feature
+4. **Month 9:** Hire first additional engineer; scale and refine live AI features (clinical summaries, appointment automation, check-up scheduling)
 5. **Month 12:** 15 paying clinics, MRR > R45,000, Series A preparation begins
 
 ---

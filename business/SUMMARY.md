@@ -18,12 +18,14 @@ This affects **48 million people** in South Africa's public healthcare system �
 
 ## How does it work?
 
-1. You get a digital wallet — it's your health identity, no password needed.
+1. You sign in using a **smart account** — no seed phrase, no password. Just connect with email or social login. You still own your data cryptographically; the tech handles the complexity.
 2. Your medical records are locked with strong encryption and stored on the internet in a way no one can tamper with.
 3. When a doctor needs to see your records, the clinic sends you an **SMS asking for permission**.
 4. You reply yes or no — from **any phone**, even a basic one (via USSD, like dialing *134*HEALTH#).
 5. If you say yes, the doctor can access your records for a set time (a day, a week, a month). After that, access expires automatically.
 6. Every time someone accesses your file, it gets recorded permanently so you always know who saw what.
+7. Before you see the doctor, **AI reads your record history and prepares a summary** so the doctor already has context when you walk in — no repeating your entire medical history from scratch.
+8. After your visit, **AI handles the admin**: booking follow-up appointments, specialist referrals, and reminding you when routine check-ups are due.
 
 **No one can access your records without your permission. Ever.**
 
@@ -66,6 +68,10 @@ Existing clinic software costs R2,000–R8,000/month and gives patients zero con
 
 We have a **fully working MVP** — built entirely by the founder. It includes:
 - Three dashboards (patient, doctor, admin)
+- **Smart account login** — patients sign in without seed phrases or passwords (ERC-4337 account abstraction)
+- **AI pre-consultation summaries** — doctor receives a structured briefing of the patient's history before each appointment
+- **AI appointment and follow-up booking** — automatically schedules follow-ups and referrals based on consultation notes
+- **AI check-up scheduling** — proactively reminds patients and clinics when routine care is overdue
 - Real SMS and USSD consent flows
 - Smart contracts on the blockchain (testnet)
 - Encrypted record storage on IPFS

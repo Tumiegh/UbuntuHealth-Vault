@@ -29,7 +29,7 @@ This matters to me not as an abstract mission statement but as something I have 
 
 **How it works:**
 
-1. A patient creates a crypto wallet — this becomes their health identity, no username or password required.
+1. A patient signs in using a **smart account** — an ERC-4337 account abstraction wallet that removes the need for seed phrases or a traditional username/password. Onboarding is as simple as connecting via email or social login, while full cryptographic ownership is preserved under the hood.
 2. When a doctor uploads a medical record, it is encrypted with AES-256 on the client before it leaves the device. The encrypted file is stored on IPFS (decentralised, tamper-proof storage). Only the file hash is recorded on a smart contract on the Base blockchain.
 3. When a healthcare provider needs access, they submit a request. The clinic administrator sends the patient an SMS consent request via Africa's Talking.
 4. The patient approves or denies from any phone — including feature phones via USSD (*134*HEALTH#). Consent is time-limited: 24 hours, 7 days, 30 days, or permanent.
@@ -42,9 +42,15 @@ The smart contract is the engine. It automatically enforces access control, expi
 
 The USSD system automates multi-step consent flows on basic feature phones, routing patients through structured menus to grant or deny access without requiring a smartphone or data connection.
 
-**AI (in roadmap):**
+**How it uses AI (implemented):**
 
-The data layer has been deliberately architected to support AI integration. Because records are standardised, encrypted, and cryptographically verified, they are a high-quality source for AI inference. The planned next feature is an AI clinical assistant that surfaces relevant patient history to the treating doctor at the point of care — flagging drug interactions, highlighting chronic conditions, and summarising a longitudinal record that might otherwise take 20 minutes to read. This requires trustworthy, complete, patient-consented data. That is exactly what Ubuntu Health Vault provides.
+AI is live in the platform across three core workflows:
+
+- **Pre-consultation summaries:** Before a patient sees a doctor, an AI model reads the patient's consented record history and generates a concise, structured summary — surfacing chronic conditions, recent test results, and flagged concerns. Doctors arrive at the consultation with context, not a blank page.
+- **Appointment and follow-up booking:** After a consultation, the AI analyses the doctor's notes and automatically initiates booking of follow-up appointments or specialist referrals where indicated, reducing the administrative burden on clinic staff and the dropout rate between consultations.
+- **Check-up scheduling:** The AI monitors patient records for overdue preventive care (e.g., annual check-ups, chronic disease monitoring intervals) and proactively surfaces scheduling recommendations to the patient and their assigned clinic.
+
+This is possible because Ubuntu Health Vault's data layer — standardised, encrypted, cryptographically verified, and patient-consented — provides the high-quality, longitudinal record that AI inference requires. The same infrastructure that enforces privacy also enables intelligence.
 
 ---
 
